@@ -2,8 +2,12 @@
 import logging
 
 import requests
+import urllib3
 
 from TaiwanLottery import utils
+
+# 關閉 SSL 警告
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 
 class TaiwanLotteryCrawler():
@@ -12,7 +16,7 @@ class TaiwanLotteryCrawler():
     COUNT_OF_GROUP_1 = 6
 
     def get_lottery_result(self, url):
-        response = requests.get(url)
+        response = requests.get(url, verify=False)
         return response.json()
 
     # 威力彩
