@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Markdown files
+.README_bk.md
+.CLAUDE.md
+.GEMINI.md
+.ISSUES.md
