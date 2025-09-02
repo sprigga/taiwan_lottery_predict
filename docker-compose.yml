@@ -32,28 +32,8 @@ services:
     restart: unless-stopped
     networks:
       - lottery-network
-    depends_on:
-      - redis
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Redis 快取服務
-  redis:
-    image: redis:7-alpine
-    container_name: taiwan-lottery-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis-data:/data
-    command: redis-server --appendonly yes
-    restart: unless-stopped
-    networks:
-      - lottery-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -61,7 +41,3 @@ services:
 networks:
   lottery-network:
     driver: bridge
-
-volumes:
-  redis-data:
-    driver: local
