@@ -111,6 +111,32 @@ def parse_ai_prediction(ai_prediction_text):
                         "reason": reason
                     })
     
+    # 如果還是沒匹配到，嘗試新增的AI LLM格式1: **獎號** [數字列表] | **特別號**: 數字
+    if not matches and not markdown_matches:
+        pattern1 = r'\*\*獎號\*\*\s*\[([^\]]+)\]\s*\|\s*\*\*特別號\*\*:\s*(\d+)'
+        matches1 = re.findall(pattern1, ai_prediction_text)
+        
+        if matches1:
+            for i, match in enumerate(matches1[:2]):
+                numbers_str, special_number_str = match
+                numbers_str = re.sub(r'[^\d,，、\s]', '', numbers_str)
+                regular_numbers = []
+                for num_str in re.split(r'[,，、\s]+', numbers_str):
+                    if num_str.strip().isdigit():
+                        regular_numbers.append(int(num_str.strip()))
+                
+                if len(regular_numbers) == 6:
+                    special_number = int(special_number_str)
+                    set_type = "冷門號碼組合" if i == 0 else "熱門號碼組合"
+                    reason = f"基於歷史資料分析的{set_type}"
+                    
+                    recommended_sets.append({
+                        "type": set_type,
+                        "regular_numbers": regular_numbers,
+                        "special_number": special_number,
+                        "reason": reason
+                    })
+    
     # 如果還是沒匹配到，嘗試最簡單的格式（直接匹配數字組合）
     if not matches and not recommended_sets:
         pattern = r'\[([^\]]+)\]\s*\+\s*(?:\*\*)?特別號(?:\*\*)?:\s*(\d+)'

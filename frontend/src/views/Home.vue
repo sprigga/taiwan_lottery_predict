@@ -27,10 +27,12 @@
             </el-button>
             
             <!-- 快速選號結果 -->
-            <div v-if="quickPrediction" class="quick-prediction">
+            <div v-if="quickPrediction || predictionError" class="quick-prediction">
               <el-divider />
               <div class="quick-numbers">
-                <div v-if="quickPrediction.recommended_sets" class="number-sets">
+                <!-- 推薦號碼區域 -->
+                <div v-if="quickPrediction && quickPrediction.recommended_sets && quickPrediction.recommended_sets.length > 0" 
+                     class="number-sets">
                   <div 
                     v-for="(set, index) in quickPrediction.recommended_sets" 
                     :key="index"
@@ -57,7 +59,38 @@
                     </div>
                   </div>
                 </div>
+                
+                <!-- 當 AI 分析完成但沒有推薦號碼時的提示 -->
+                <div v-else-if="quickPrediction && quickPrediction.status === 'success' && (!quickPrediction.recommended_sets || quickPrediction.recommended_sets.length === 0)" 
+                     class="no-numbers-hint">
+                  <el-alert 
+                    title="AI 分析完成，但未能生成推薦號碼" 
+                    type="warning" 
+                    :closable="false"
+                    show-icon>
+                    <template #default>
+                      <p>AI 已完成資料分析，但未能解析出具體的推薦號碼組合。請稍後再試，或查看詳細分析了解更多資訊。</p>
+                    </template>
+                  </el-alert>
+                </div>
+                
+                <!-- 錯誤狀態提示 -->
+                <div v-else-if="predictionError" class="error-hint">
+                  <el-alert 
+                    title="獲取推薦號碼失敗" 
+                    type="error" 
+                    :closable="false"
+                    show-icon>
+                    <template #default>
+                      <p>{{ predictionError }}</p>
+                      <p>請稍後再試，或檢查網路連線狀態。</p>
+                    </template>
+                  </el-alert>
+                </div>
+                
+                <!-- 按鈕區域 -->
                 <el-button 
+                  v-if="quickPrediction"
                   type="info" 
                   size="small" 
                   @click="navigateToDetail"
@@ -134,24 +167,52 @@ export default {
     const router = useRouter()
     const quickLoading = ref(false)
     const quickPrediction = ref(null)
+    const predictionError = ref(null)
+    let currentRequest = null
 
     const getQuickPrediction = async () => {
+      // 防止重複請求
+      if (quickLoading.value) {
+        console.log('Request already in progress, ignoring...')
+        return
+      }
+
+      // 如果已有請求在進行，取消它
+      if (currentRequest) {
+        currentRequest.abort()
+        console.log('Cancelled previous request')
+      }
+
       quickLoading.value = true
-      quickPrediction.value = null
+      predictionError.value = null // 清除之前的錯誤
+      
+      // 創建可取消的請求
+      const controller = new AbortController()
+      currentRequest = controller
 
       try {
-        const response = await axios.get('/api/lotto649/predict')
+        const response = await axios.get('/api/lotto649/predict', {
+          signal: controller.signal
+        })
+        
         if (response.data.status === 'success') {
           quickPrediction.value = response.data
           console.log('Quick prediction data:', quickPrediction.value)
           ElMessage.success('快速選號完成！')
         } else {
-          ElMessage.error(response.data.error || '獲取推薦號碼失敗')
+          predictionError.value = response.data.error || '獲取推薦號碼失敗'
+          ElMessage.error(predictionError.value)
         }
       } catch (err) {
-        ElMessage.error(err.response?.data?.detail || err.message || '網路連接失敗')
+        if (axios.isCancel(err)) {
+          console.log('Request was cancelled')
+          return
+        }
+        predictionError.value = err.response?.data?.detail || err.message || '網路連接失敗'
+        ElMessage.error(predictionError.value)
         console.error('Quick prediction error:', err)
       } finally {
+        currentRequest = null
         quickLoading.value = false
       }
     }
@@ -173,6 +234,7 @@ export default {
     return {
       quickLoading,
       quickPrediction,
+      predictionError,
       getQuickPrediction,
       navigateToDetail
     }
@@ -301,6 +363,31 @@ export default {
 .detail-button {
   width: 100%;
   margin-top: 10px;
+}
+
+/* 新增的提示區域樣式 */
+.no-numbers-hint {
+  margin-bottom: 15px;
+}
+
+.error-hint {
+  margin-bottom: 15px;
+}
+
+.no-numbers-hint .el-alert,
+.error-hint .el-alert {
+  margin-bottom: 0;
+}
+
+.no-numbers-hint .el-alert__content p,
+.error-hint .el-alert__content p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.no-numbers-hint .el-alert__content p + p,
+.error-hint .el-alert__content p + p {
+  margin-top: 8px;
 }
 
 @media (max-width: 768px) {
