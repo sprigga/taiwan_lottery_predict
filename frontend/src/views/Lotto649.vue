@@ -185,7 +185,8 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { TrendCharts } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -196,6 +197,7 @@ export default {
     TrendCharts
   },
   setup() {
+    const router = useRouter()
     const loading = ref(false)
     const prediction = ref(null)
     const error = ref('')
@@ -206,7 +208,7 @@ export default {
       prediction.value = null
 
       try {
-        const response = await axios.get('http://localhost:8000/api/lotto649/predict')
+        const response = await axios.get('/api/lotto649/predict')
         if (response.data.status === 'success') {
           prediction.value = response.data
           ElMessage.success('AI 分析完成！')
@@ -221,6 +223,26 @@ export default {
         loading.value = false
       }
     }
+
+    // Check for prediction data from sessionStorage when component mounts
+    onMounted(() => {
+      const storedPrediction = sessionStorage.getItem('lotto649_prediction')
+      console.log('Stored prediction:', storedPrediction)
+      
+      if (storedPrediction) {
+        try {
+          const parsedPrediction = JSON.parse(storedPrediction)
+          console.log('Parsed prediction:', parsedPrediction)
+          prediction.value = parsedPrediction
+          // Clear the stored data after using it
+          sessionStorage.removeItem('lotto649_prediction')
+          ElMessage.success('已加載預測結果！')
+        } catch (error) {
+          console.error('Failed to parse stored prediction:', error)
+          sessionStorage.removeItem('lotto649_prediction')
+        }
+      }
+    })
 
     return {
       loading,

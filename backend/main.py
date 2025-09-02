@@ -24,7 +24,14 @@ app = FastAPI(
 # 設定 CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Vue.js 開發伺服器
+    allow_origins=[
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",
+        "http://localhost:8000", 
+        "http://127.0.0.1:8000",
+        "http://frontend:80",
+        "http://taiwan-lottery-frontend:80"
+    ],  # Vue.js 開發伺服器、前端容器和 Docker 服務名稱
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -166,6 +173,10 @@ async def root():
             "daily_cash": "/api/daily_cash"
         }
     }
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "message": "Backend service is running"}
 
 @app.get("/api/lotto649", response_model=List[LotteryData])
 async def get_lotto649(year: Optional[str] = None, month: Optional[str] = None):

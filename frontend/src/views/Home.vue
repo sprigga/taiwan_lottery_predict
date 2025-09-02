@@ -60,7 +60,7 @@
                 <el-button 
                   type="info" 
                   size="small" 
-                  @click="$router.push('/lotto649')"
+                  @click="navigateToDetail"
                   class="detail-button"
                 >
                   查看詳細分析
@@ -118,6 +118,7 @@
 
 <script>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import axios from 'axios'
 import { TrendCharts, DataAnalysis, Money } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -130,6 +131,7 @@ export default {
     Money
   },
   setup() {
+    const router = useRouter()
     const quickLoading = ref(false)
     const quickPrediction = ref(null)
 
@@ -138,7 +140,7 @@ export default {
       quickPrediction.value = null
 
       try {
-        const response = await axios.get('http://localhost:8000/api/lotto649/predict')
+        const response = await axios.get('/api/lotto649/predict')
         if (response.data.status === 'success') {
           quickPrediction.value = response.data
           console.log('Quick prediction data:', quickPrediction.value)
@@ -154,10 +156,25 @@ export default {
       }
     }
 
+    const navigateToDetail = () => {
+      console.log('Navigate to detail called, quickPrediction:', quickPrediction.value)
+      if (quickPrediction.value) {
+        // Pass prediction data through sessionStorage
+        const predictionData = JSON.stringify(quickPrediction.value)
+        console.log('Storing prediction data:', predictionData)
+        sessionStorage.setItem('lotto649_prediction', predictionData)
+        router.push('/lotto649')
+      } else {
+        console.log('No prediction data available, navigating without data')
+        router.push('/lotto649')
+      }
+    }
+
     return {
       quickLoading,
       quickPrediction,
-      getQuickPrediction
+      getQuickPrediction,
+      navigateToDetail
     }
   }
 }

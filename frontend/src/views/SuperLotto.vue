@@ -140,7 +140,7 @@ export default {
 
       try {
         const [year, month] = selectedDate.value.split('-')
-        const response = await axios.get('http://localhost:8000/api/super_lotto', {
+        const response = await axios.get('/api/super_lotto', {
           params: { year, month }
         })
         

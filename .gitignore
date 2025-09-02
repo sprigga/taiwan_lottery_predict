@@ -80,6 +80,7 @@ target/
 # IPython
 profile_default/
 ipython_config.py
+test_regex.py
 
 # pyenv
 .python-version
@@ -133,3 +134,4 @@ dmypy.json
 .CLAUDE.md
 .GEMINI.md
 .ISSUES.md
+.RELEASES.md

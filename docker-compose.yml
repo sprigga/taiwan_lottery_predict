@@ -1,0 +1,67 @@
+services:
+  # 前端服務
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: taiwan-lottery-frontend
+    ports:
+      - "8080:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - lottery-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 後端 API 服務 (Python)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: taiwan-lottery-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+    restart: unless-stopped
+    networks:
+      - lottery-network
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis 快取服務
+  redis:
+    image: redis:7-alpine
+    container_name: taiwan-lottery-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - lottery-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  lottery-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
