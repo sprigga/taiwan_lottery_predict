@@ -130,8 +130,8 @@ dmypy.json
 .pyre/
 
 # Markdown files
-.README_bk.md
-.CLAUDE.md
-.GEMINI.md
-.ISSUES.md
-.RELEASES.md
+README_bk.md
+CLAUDE.md
+GEMINI.md
+ISSUES.md
+RELEASES.md
