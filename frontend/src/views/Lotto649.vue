@@ -32,11 +32,12 @@
               <div v-if="prediction.recommended_sets" class="recommended-sets">
                 <h3>🎯 推薦號碼</h3>
                 <el-row :gutter="20">
-                  <el-col 
-                    v-for="(set, index) in prediction.recommended_sets" 
+                  <el-col
+                    v-for="(set, index) in prediction.recommended_sets"
                     :key="index"
-                    :xs="24" 
-                    :md="12"
+                    :xs="24"
+                    :sm="12"
+                    :md="6"
                   >
                     <el-card class="number-set-card" shadow="hover">
                       <template #header>
@@ -448,6 +449,23 @@ export default {
     flex-direction: column;
     gap: 10px;
     text-align: center;
+  }
+  
+  .regular-numbers {
+    gap: 4px;
+  }
+  
+  .number-tag.regular-big,
+  .number-tag.special-big {
+    min-width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 992px) and (min-width: 769px) {
+  .number-set-card {
+    margin-bottom: 15px;
   }
 }
 </style>

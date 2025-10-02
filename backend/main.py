@@ -24,14 +24,7 @@ app = FastAPI(
 # 設定 CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000", 
-        "http://127.0.0.1:3000",
-        "http://localhost:8000", 
-        "http://127.0.0.1:8000",
-        "http://frontend:80",
-        "http://taiwan-lottery-frontend:80"
-    ],  # Vue.js 開發伺服器、前端容器和 Docker 服務名稱
+    allow_origins=["*"],  # Vue.js 開發伺服器、前端容器和 Docker 服務名稱
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -60,7 +53,7 @@ lottery_crawler = TaiwanLotteryCrawler()
 
 def parse_ai_prediction(ai_prediction_text):
     """
-    解析 AI 預測文字，提取出兩組號碼
+    解析 AI 預測文字，提取出三組號碼
     """
     if not ai_prediction_text:
         return None
@@ -70,15 +63,16 @@ def parse_ai_prediction(ai_prediction_text):
     # 根據 Lottery_predict.py 中的提示詞格式，匹配以下格式：
     # 第一組(冷門號碼組合): [號碼1, 號碼2, 號碼3, 號碼4, 號碼5, 號碼6] + 特別號: 號碼
     # 第二組(熱門號碼組合): [號碼1, 號碼2, 號碼3, 號碼4, 號碼5, 號碼6] + 特別號: 號碼
+    # 第三組(熱門 + 冷門 混合號碼組合): [號碼1, 號碼2, 號碼3, 號碼4, 號碼5, 號碼6] + 特別號: 號碼
     
     # 主要匹配模式：第X組(類型): [數字列表] + 特別號: 數字
-    pattern = r'第[一二]組\(([^)]+)\):\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
+    pattern = r'第[一二三四]組\(([^)]+)\):\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
     matches = re.findall(pattern, ai_prediction_text)
     
     # 如果沒匹配到，嘗試更寬鬆的格式（可能有額外的符號或格式）
     if not matches:
         # 匹配帶有星號或其他格式的版本
-        pattern = r'\*?\*?第[一二]組\(([^)]+)\):\*?\*?\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
+        pattern = r'\*?\*?第[一二三四]組\(([^)]+)\):\*?\*?\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
         matches = re.findall(pattern, ai_prediction_text)
     
     # 如果還是沒匹配到，嘗試 Markdown 格式：**彩券號碼:** [數字列表] + **特別號:** 數字
@@ -87,9 +81,9 @@ def parse_ai_prediction(ai_prediction_text):
         markdown_pattern = r'\*\*彩券號碼:\*\*\s*\[([^\]]+)\]\s*\+\s*\*\*特別號:\*\*\s*(\d+)'
         markdown_matches = re.findall(markdown_pattern, ai_prediction_text)
         
-        if len(markdown_matches) >= 2:
-            # 確定第一組是冷門，第二組是熱門（根據文本中的順序）
-            for i, match in enumerate(markdown_matches[:2]):
+        if len(markdown_matches) >= 4:
+            # 確定第一組是冷門，第二組是熱門，第三組是混合，第四組是均衡（根據文本中的順序）
+            for i, match in enumerate(markdown_matches[:4]):
                 numbers_str, special_number_str = match
                 # 解析號碼字符串，處理各種可能的分隔符
                 numbers_str = re.sub(r'[^\d,，、\s]', '', numbers_str)  # 移除非數字、逗號、空格的字符
@@ -101,7 +95,14 @@ def parse_ai_prediction(ai_prediction_text):
                 if len(regular_numbers) == 6:  # 確保有6個號碼
                     special_number = int(special_number_str)
                     # 根據文本中的順序判斷類型
-                    set_type = "冷門號碼組合" if i == 0 else "熱門號碼組合"
+                    if i == 0:
+                        set_type = "冷門號碼組合"
+                    elif i == 1:
+                        set_type = "熱門號碼組合"
+                    elif i == 2:
+                        set_type = "熱門 + 冷門 混合號碼組合"
+                    else:
+                        set_type = "均衡組合"
                     reason = f"基於歷史資料分析的{set_type}"
                     
                     recommended_sets.append({
@@ -111,13 +112,13 @@ def parse_ai_prediction(ai_prediction_text):
                         "reason": reason
                     })
     
-    # 如果還是沒匹配到，嘗試新增的AI LLM格式1: **獎號** [數字列表] | **特別號**: 數字
+    # 如果還是沒匹配到，嘗試新增的AI LLM格式1: **獎號**: [數字列表] **特別號**: 數字
     if not matches and not markdown_matches:
-        pattern1 = r'\*\*獎號\*\*\s*\[([^\]]+)\]\s*\|\s*\*\*特別號\*\*:\s*(\d+)'
+        pattern1 = r'\*\*獎號\*\*:\s*\[([^\]]+)\]\s*\*\*特別號\*\*:\s*(\d+)'
         matches1 = re.findall(pattern1, ai_prediction_text)
         
         if matches1:
-            for i, match in enumerate(matches1[:2]):
+            for i, match in enumerate(matches1[:4]):
                 numbers_str, special_number_str = match
                 numbers_str = re.sub(r'[^\d,，、\s]', '', numbers_str)
                 regular_numbers = []
@@ -127,7 +128,39 @@ def parse_ai_prediction(ai_prediction_text):
                 
                 if len(regular_numbers) == 6:
                     special_number = int(special_number_str)
-                    set_type = "冷門號碼組合" if i == 0 else "熱門號碼組合"
+                    if i == 0:
+                        set_type = "冷門號碼組合"
+                    elif i == 1:
+                        set_type = "熱門號碼組合"
+                    elif i == 2:
+                        set_type = "熱門 + 冷門 混合號碼組合"
+                    else:
+                        set_type = "均衡組合"
+                    reason = f"基於歷史資料分析的{set_type}"
+
+                    recommended_sets.append({
+                        "type": set_type,
+                        "regular_numbers": regular_numbers,
+                        "special_number": special_number,
+                        "reason": reason
+                    })
+
+    # 如果還是沒匹配到，嘗試新的格式2: **第X組(類型):** [數字列表] + 特別號: 數字
+    if not matches and not markdown_matches and not recommended_sets:
+        pattern2 = r'\*\*第[一二三四]組\(([^)]+)\):\*\*\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
+        matches2 = re.findall(pattern2, ai_prediction_text)
+
+        if matches2:
+            for match in matches2[:4]:
+                set_type, numbers_str, special_number_str = match
+                numbers_str = re.sub(r'[^\d,，、\s]', '', numbers_str)
+                regular_numbers = []
+                for num_str in re.split(r'[,，、\s]+', numbers_str):
+                    if num_str.strip().isdigit():
+                        regular_numbers.append(int(num_str.strip()))
+                
+                if len(regular_numbers) == 6:
+                    special_number = int(special_number_str)
                     reason = f"基於歷史資料分析的{set_type}"
                     
                     recommended_sets.append({
@@ -141,8 +174,8 @@ def parse_ai_prediction(ai_prediction_text):
     if not matches and not recommended_sets:
         pattern = r'\[([^\]]+)\]\s*\+\s*(?:\*\*)?特別號(?:\*\*)?:\s*(\d+)'
         simple_matches = re.findall(pattern, ai_prediction_text)
-        if len(simple_matches) >= 2:
-            for i, match in enumerate(simple_matches[:2]):
+        if len(simple_matches) >= 4:
+            for i, match in enumerate(simple_matches[:4]):
                 numbers_str, special_number_str = match
                 # 解析號碼字符串，處理各種可能的分隔符
                 numbers_str = re.sub(r'[^\d,，、\s]', '', numbers_str)  # 移除非數字、逗號、空格的字符
@@ -153,9 +186,16 @@ def parse_ai_prediction(ai_prediction_text):
                 
                 if len(regular_numbers) == 6:  # 確保有6個號碼
                     special_number = int(special_number_str)
-                    set_type = "冷門號碼組合" if i == 0 else "熱門號碼組合"
+                    if i == 0:
+                        set_type = "冷門號碼組合"
+                    elif i == 1:
+                        set_type = "熱門號碼組合"
+                    elif i == 2:
+                        set_type = "熱門 + 冷門 混合號碼組合"
+                    else:
+                        set_type = "均衡組合"
                     reason = f"基於歷史資料分析的{set_type}"
-                    
+
                     recommended_sets.append({
                         "type": set_type,
                         "regular_numbers": regular_numbers,
@@ -164,7 +204,7 @@ def parse_ai_prediction(ai_prediction_text):
                     })
     else:
         # 處理帶類型的匹配結果
-        for match in matches[:2]:
+        for match in matches[:4]:
             if len(match) == 3:  # 帶類型的格式
                 set_type, numbers_str, special_number_str = match
                 # 解析號碼字符串，處理各種可能的分隔符和格式
