@@ -4,17 +4,21 @@
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-009688.svg)](https://fastapi.tiangolo.com)
 [![Vue.js](https://img.shields.io/badge/Vue.js-3.3%2B-4FC08D.svg)](https://vuejs.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![CI/CD](https://github.com/stu01509/TaiwanLotteryCrawler/workflows/Merge/badge.svg)](https://github.com/stu01509/TaiwanLotteryCrawler/actions)
 
-## 專案概述
+## 📖 專案概述
 
-這是一個結合 **AI 智能分析** 和 **現代化 Web 技術** 的台灣彩券選號系統。專案整合了原有的台灣彩券爬蟲功能，並擴展為全棧 Web 應用，提供：
+這是一個結合 **AI 智能分析** 和 **現代化 Web 技術** 的台灣彩券選號系統。專案整合了原有的台灣彩券爬蟲功能，並擴展為全棧 Web 應用，提供智能選號、數據分析和歷史資料查詢服務。
 
-- 🤖 **AI 智能選號**：使用 Google Gemini AI 分析半年歷史資料
-- 📊 **數據視覺化**：直觀的號碼頻率統計和趨勢分析  
-- 🎯 **多彩種支援**：大樂透、威力彩、今彩539、雙贏彩等
+### ✨ 核心特色
+
+- 🤖 **AI 智能選號**：使用 Google Gemini 2.5 Flash 分析半年歷史資料，提供**四組**推薦號碼
+- 📊 **數據視覺化**：直觀的號碼頻率統計和趨勢分析
+- 🎯 **多彩種支援**：大樂透、威力彩、今彩539 等台灣彩券
 - 📱 **響應式設計**：支援桌面、平板、手機等多種設備
 - ⚡ **高效能架構**：FastAPI + Vue.js 現代化技術棧
+- 🐳 **容器化部署**：Docker Compose 一鍵部署
+
+---
 
 ## 🏗️ 系統架構
 
@@ -26,171 +30,244 @@ TaiwanLotteryCrawler/
 │   ├── src/
 │   │   ├── views/                # 頁面元件
 │   │   │   ├── Home.vue         # 首頁與快速選號
-│   │   │   ├── Lotto649.vue     # 大樂透詳細分析
+│   │   │   ├── Lotto649.vue     # 大樂透 AI 選號
 │   │   │   ├── SuperLotto.vue   # 威力彩查詢
 │   │   │   └── History.vue      # 歷史資料統計
 │   │   ├── App.vue              # 主應用元件
 │   │   └── main.js              # 應用程式入口
-│   ├── package.json             # Node.js 依賴管理
-│   └── vite.config.js           # Vite 建構配置
+│   ├── nginx.conf               # Nginx 反向代理配置
+│   ├── Dockerfile               # 前端容器映像
+│   └── package.json             # Node.js 依賴管理
 ├── 📁 TaiwanLottery/              # 核心爬蟲模組
 │   ├── __init__.py              # 主要爬蟲類別
 │   └── utils.py                 # 工具函式庫
 ├── 📁 tests/                     # 單元測試
-│   ├── test_lottery.py          # 爬蟲功能測試
-│   └── test_utils.py            # 工具函式測試
+│   └── test_lottery.py          # 爬蟲功能測試
 ├── 📁 .github/workflows/         # CI/CD 自動化
 │   ├── merge.yaml               # 主分支部署
 │   ├── pull_request.yaml        # PR 檢查
 │   └── release.yaml             # 版本發布
 ├── Lottery_predict.py            # AI 預測核心邏輯
-├── ISSUE.md                      # 問題修復記錄
+├── docker-compose.yml            # Docker 服務編排
+├── Dockerfile.backend            # 後端容器映像
 ├── requirements.txt              # Python 依賴清單
-├── setup.py                     # 套件安裝配置
-├── pytest.ini                   # 測試配置
+└── setup.py                     # 套件安裝配置
+```
 
-## 🔍 核心模組分析
+---
+
+## 🚀 快速開始
+
+### 📋 環境需求
+
+- **Docker** 和 **Docker Compose** (推薦使用容器化部署)
+- 或者：
+  - **Python 3.8+** (建議使用 3.10+)
+  - **Node.js 16+** 和 **npm**
+- **Google AI API Key** (用於 AI 選號功能)
+
+### 🐳 方法一：Docker 部署 (推薦)
+
+```bash
+# 1. 克隆專案
+git clone https://github.com/stu01509/TaiwanLotteryCrawler.git
+cd TaiwanLotteryCrawler
+
+# 2. 建立環境變數檔案
+cat > .env << EOF
+GOOGLE_AI_API_KEY=your_google_ai_api_key_here
+EOF
+
+# 3. 啟動所有服務
+docker-compose up -d
+
+# 4. 查看服務狀態
+docker-compose ps
+
+# 5. 查看日誌
+docker-compose logs -f
+```
+
+**服務訪問：**
+- 🌐 **前端應用**：http://localhost:8080
+- 🔧 **後端 API**：http://localhost:8000
+- 📖 **API 文件**：http://localhost:8000/docs
+
+### 💻 方法二：本地開發
+
+```bash
+# 1. 克隆專案
+git clone https://github.com/stu01509/TaiwanLotteryCrawler.git
+cd TaiwanLotteryCrawler
+
+# 2. 設定環境變數
+echo "GOOGLE_AI_API_KEY=your_api_key" > .env
+
+# 3. 啟動後端 (終端機 1)
+pip install -r requirements.txt
+cd backend
+python main.py
+
+# 4. 啟動前端 (終端機 2)
+cd frontend
+npm install
+npm run dev
+```
+
+**服務訪問：**
+- 🌐 **前端應用**：http://localhost:3000
+- 🔧 **後端 API**：http://localhost:8000
+
+---
+
+## 🎯 功能說明
+
+### 1. 🏠 首頁 (Home.vue)
+
+- **快速選號**：一鍵獲取 AI 推薦的四組大樂透號碼
+- **功能導航**：快速跳轉到各彩種頁面
+- **響應式設計**：自動適配手機、平板、桌面
+
+### 2. 🎲 大樂透 AI 選號 (Lotto649.vue)
+
+- **智能分析**：AI 分析過去半年 (約 44 期) 歷史資料
+- **四組推薦**：
+  1. **冷門號碼組合** - 低頻出現的號碼
+  2. **熱門號碼組合** - 高頻出現的號碼
+  3. **混合號碼組合** - 熱門與冷門搭配
+  4. **均衡組合** - 平衡各項指標
+- **詳細分析**：
+  - 號碼頻率統計（熱門/冷門前 10 名）
+  - 選號理由說明
+  - 統計資料概覽
+- **視覺化呈現**：圖表化顯示號碼出現頻率
+
+### 3. 🎯 威力彩查詢 (SuperLotto.vue)
+
+- **歷史資料查詢**：依年月查看開獎記錄
+- **完整資訊**：期別、日期、第一區、第二區號碼
+- **資料匯出**：支援 JSON 格式匯出
+
+### 4. 📊 歷史資料 (History.vue)
+
+- **多彩種支援**：大樂透、威力彩、今彩539
+- **彈性查詢**：自訂年月範圍
+- **統計分析**：號碼頻率、趨勢分析
+
+---
+
+## 📡 API 端點
+
+### 基本端點
+
+- `GET /` - API 服務資訊
+- `GET /health` - 健康檢查
+
+### 大樂透相關
+
+- `GET /api/lotto649` - 獲取大樂透歷史資料
+  - **參數**：`year` (年份), `month` (月份)
+  - **回應**：期別、開獎日期、獎號、特別號
+
+- `GET /api/lotto649/predict` - AI 智能預測大樂透號碼
+  - **功能**：分析半年資料，提供四組推薦號碼
+  - **回應**：
+    ```json
+    {
+      "status": "success",
+      "data": {
+        "total_periods": 44,
+        "date_range": { "start": "2025-05-01", "end": "2025-09-30" },
+        "frequency_analysis": {
+          "hot_numbers": [[5, 15], [14, 14], ...],
+          "cold_numbers": [[48, 3], [29, 4], ...]
+        }
+      },
+      "recommended_sets": [
+        {
+          "type": "冷門號碼組合",
+          "regular_numbers": [10, 12, 24, 31, 35, 43],
+          "special_number": 7,
+          "reason": "基於歷史資料分析的冷門號碼組合"
+        },
+        // ... 其他三組
+      ],
+      "ai_prediction": "AI 分析詳細說明..."
+    }
+    ```
+
+### 其他彩種
+
+- `GET /api/super_lotto` - 威力彩歷史資料 (6/38+1)
+- `GET /api/daily_cash` - 今彩539 歷史資料 (5/39)
+
+### API 文件
+
+- **Swagger UI**：http://localhost:8000/docs
+- **ReDoc**：http://localhost:8000/redoc
+
+---
+
+## 🛠️ 技術棧
+
+### 後端技術
+
+| 技術 | 版本 | 用途 |
+|------|------|------|
+| FastAPI | 0.104+ | 高效能 Web 框架 |
+| Uvicorn | 0.24+ | ASGI 伺服器 |
+| Pydantic | 2.4+ | 資料驗證 |
+| Google Generative AI | 0.3+ | Gemini AI 引擎 |
+| Requests | 2.31.0 | HTTP 請求 |
+| Python-dotenv | 1.0+ | 環境變數管理 |
+
+### 前端技術
+
+| 技術 | 版本 | 用途 |
+|------|------|------|
+| Vue.js | 3.3+ | 前端框架 |
+| Vue Router | 4.2+ | 路由管理 |
+| Element Plus | 2.4+ | UI 組件庫 |
+| Axios | 1.5+ | HTTP 客戶端 |
+| Vite | 4.4+ | 建構工具 |
+
+### 容器化部署
+
+| 技術 | 用途 |
+|------|------|
+| Docker | 容器化運行環境 |
+| Docker Compose | 多容器編排 |
+| Nginx | 前端靜態資源服務與反向代理 |
+
+### 開發與測試
+
+| 工具 | 用途 |
+|------|------|
+| Pytest | 單元測試 |
+| Pytest-cov | 測試覆蓋率 |
+| Flake8 | 程式碼風格檢查 |
+| Pre-commit | Git hooks 管理 |
+
+---
+
+## 🔍 核心模組詳解
 
 ### 1. TaiwanLottery 爬蟲模組
 
-**主要類別**: `TaiwanLotteryCrawler`
-- **資料來源**: `https://api.taiwanlottery.com/TLCAPIWeB/Lottery`
-- **支援彩種**: 9種台灣彩券類型
-- **核心方法**:
-  - `lotto649()` - 大樂透 (6/49+特別號)
-  - `super_lotto()` - 威力彩 (6/38+第二區1號)
-  - `daily_cash()` - 今彩539 (5/39)
-  - `lotto1224()` - 雙贏彩 (12/24)
-  - `lotto3d()` - 3星彩
-  - `lotto4d()` - 4星彩
-  - `lotto38m6()` - 38樂合彩
-  - `lotto49m6()` - 49樂合彩
-  - `lotto39m5()` - 39樂合彩
+**主要類別**：`TaiwanLotteryCrawler`
 
-**工具函數** (`utils.py`):
-- `get_current_month()` - 取得當前月份
-- `get_current_year()` - 取得當前年份
-- `convert_to_republic_era_month()` - 西元年轉民國年
-- `month_diff()` - 計算月份差異
-- `output_to_json()` - JSON 檔案輸出
-- `print_to_table()` - 表格格式顯示
+**資料來源**：`https://api.taiwanlottery.com/TLCAPIWeB/Lottery`
 
-### 2. AI 預測模組 (`Lottery_predict.py`)
+**支援彩種**：
+- `lotto649()` - 大樂透 (6/49+特別號)
+- `super_lotto()` - 威力彩 (6/38+第二區1號)
+- `daily_cash()` - 今彩539 (5/39)
+- `lotto1224()` - 雙贏彩 (12/24)
+- `lotto3d()` - 3星彩
+- `lotto4d()` - 4星彩
+- 以及其他彩種...
 
-**核心功能**:
-- **資料收集**: `get_six_months_lotto649_data()` - 擷取半年大樂透資料
-- **AI 分析**: `predict_lottery_numbers_with_ai()` - 使用 Google Gemini 2.5 Flash
-- **智能選號**: 基於歷史資料提供冷門/熱門號碼組合
-
-**AI 分析策略**:
-- 奇偶比分佈 (建議 3:2 或 2:3)
-- 大小號分佈 (小號 1-25，大號 26-49)
-- 避開連號和順序號
-- 遺漏號碼追蹤 (5-10期未出現)
-- 熱門/冷門號碼搭配
-
-### 3. FastAPI 後端服務 (`backend/main.py`)
-
-**API 架構**:
-- **框架**: FastAPI + Uvicorn
-- **CORS 支援**: 跨域請求處理
-- **資料模型**: Pydantic 驗證
-- **健康檢查**: `/health` 端點
-
-**主要端點**:
-- `GET /` - API 服務資訊
-- `GET /api/lotto649` - 大樂透歷史資料
-- `GET /api/lotto649/predict` - AI 預測服務
-- `GET /api/super_lotto` - 威力彩資料
-- `GET /api/daily_cash` - 今彩539資料
-
-**AI 預測處理**:
-- 正規表達式解析 AI 回應
-- 結構化號碼推薦
-- 頻率統計分析
-- 錯誤處理機制
-
-### 4. Vue.js 前端應用
-
-**技術棧**:
-- **框架**: Vue.js 3 + Composition API
-- **UI 庫**: Element Plus
-- **路由**: Vue Router 4
-- **HTTP 客戶端**: Axios
-- **建構工具**: Vite
-
-**頁面結構**:
-- `App.vue` - 主應用框架，包含導航和佈局
-- `Home.vue` - 首頁，快速選號功能
-- `Lotto649.vue` - 大樂透專頁，AI 分析結果
-- `SuperLotto.vue` - 威力彩查詢頁面
-- `History.vue` - 歷史資料統計頁面
-
-### 5. 容器化部署
-
-**Docker 配置**:
-- `docker-compose.yml` - 服務編排
-- `Dockerfile.backend` - Python 後端容器
-- `frontend/Dockerfile` - Node.js 前端容器
-
-**服務架構**:
-- **前端服務**: Nginx + Vue.js (Port 8080)
-- **後端服務**: FastAPI + Uvicorn (Port 8000)
-- **網路**: Bridge 網路連接
-- **健康檢查**: 自動服務監控
-
-### 6. CI/CD 流程
-
-**GitHub Actions**:
-- `merge.yaml` - 主分支自動測試與部署
-- `pull_request.yaml` - PR 程式碼檢查
-- `release.yaml` - 版本發布自動化
-
-**品質控制**:
-- **測試**: pytest + pytest-cov
-- **程式碼檢查**: flake8
-- **程式碼掃描**: SonarCloud
-- **覆蓋率報告**: Codecov
-- **Git Hooks**: pre-commit
-
-## 📊 技術特色
-
-### 資料處理流程
-1. **資料擷取** → 台灣彩券官方 API
-2. **資料清理** → 格式標準化與驗證
-3. **AI 分析** → Google Gemini 深度學習
-4. **結果呈現** → RESTful API + 響應式 UI
-
-### 效能最佳化
-- **非同步處理**: FastAPI 非同步路由
-- **快取機制**: 半年資料本地快取
-- **容器化**: Docker 輕量化部署
-- **CDN 支援**: 靜態資源最佳化
-
-### 安全性設計
-- **API 金鑰管理**: 環境變數保護
-- **CORS 政策**: 跨域安全控制
-- **輸入驗證**: Pydantic 資料驗證
-- **容器安全**: 非 root 使用者執行
-
-## 📈 資料分析能力
-
-### 統計分析功能
-- **號碼頻率統計**: 分析半年內各號碼出現次數
-- **冷熱門分析**: 識別高頻與低頻號碼
-- **遺漏分析**: 追蹤長期未出現的號碼
-- **趨勢分析**: 號碼出現模式識別
-
-### AI 智能分析
-- **模型**: Google Gemini 2.5 Flash
-- **資料範圍**: 過去6個月歷史資料
-- **分析維度**: 
-  - 奇偶數分佈平衡
-  - 大小號碼分佈
-  - 連號避免策略
-  - 號碼組合最佳化
-
-### 資料格式
+**資料格式**：
 ```json
 {
   "期別": 114000001,
@@ -200,270 +277,122 @@ TaiwanLotteryCrawler/
 }
 ```
 
-## 🛠️ 依賴套件分析
+### 2. AI 預測模組 (Lottery_predict.py)
 
-### Python 後端依賴
-```python
-# 核心框架
-fastapi>=0.104.0          # 高效能 Web 框架
-uvicorn[standard]>=0.24.0 # ASGI 伺服器
-pydantic>=2.4.0           # 資料驗證
+**核心功能**：
+- `get_six_months_lotto649_data()` - 擷取半年大樂透資料
+- `predict_lottery_numbers_with_ai()` - 使用 Google Gemini 2.5 Flash 分析
 
-# 資料處理
-requests==2.31.0          # HTTP 請求處理
-terminaltables==3.1.0     # 表格格式輸出
-python-dotenv>=1.0.0      # 環境變數管理
+**AI 分析策略**：
+- ✅ 奇偶比分佈 (建議 3:2 或 2:3)
+- ✅ 大小號分佈 (小號 1-25，大號 26-49)
+- ✅ 避開 3 個以上連號
+- ✅ 遺漏號碼追蹤 (5-10 期未出現)
+- ✅ 熱門/冷門號碼搭配
+- ✅ 分區選號 (低/中/高區)
+- ✅ 和值範圍控制 (120-160)
 
-# AI 整合
-google-generativeai>=0.3.0 # Google Gemini API
+**更新說明**：
+- 🆕 從原本的三組推薦擴展為**四組推薦**
+- 🆕 新增「均衡組合」類型
+- 🆕 所有正則表達式匹配支持第四組解析
 
-# 開發工具
-pytest==7.4.0            # 單元測試框架
-pytest-cov==4.1.0        # 測試覆蓋率
-flake8==6.0.0            # 程式碼風格檢查
-pre-commit==3.3.3        # Git hooks 管理
-```
+### 3. FastAPI 後端服務 (backend/main.py)
 
-### 前端依賴
-```json
-{
-  "dependencies": {
-    "vue": "^3.3.0",                    // Vue.js 核心框架
-    "axios": "^1.5.0",                 // HTTP 客戶端
-    "vue-router": "^4.2.0",            // 路由管理
-    "element-plus": "^2.4.0",          // UI 組件庫
-    "@element-plus/icons-vue": "^2.1.0" // 圖示庫
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^4.4.0",    // Vue Vite 插件
-    "vite": "^4.4.0"                   // 建構工具
-  }
-}
-```
+**主要功能**：
+- RESTful API 端點設計
+- CORS 跨域請求處理
+- Pydantic 資料驗證
+- AI 預測結果解析（支持多種 AI 回應格式）
+- 錯誤處理機制
+- 健康檢查端點
 
-## 🔧 開發環境配置
+**AI 回應解析**：
+- 支持多種 AI 輸出格式的正則表達式匹配
+- 智能提取四組推薦號碼
+- 結構化資料回應
 
-### 環境變數設定
-```bash
-# .env 檔案配置
-GOOGLE_AI_API_KEY=your_gemini_api_key_here
-NODE_ENV=development
-PYTHONPATH=/app
-```
+### 4. Vue.js 前端應用
 
-### 開發工具配置
-- **pytest.ini**: 測試配置與覆蓋率設定
-- **setup.cfg**: 專案元數據與 flake8 規則
-- **.pre-commit-config.yaml**: Git hooks 自動化
-- **sonar-project.properties**: 程式碼品質分析
-- **renovate.json**: 依賴套件自動更新
+**頁面結構**：
+- `App.vue` - 主應用框架，導航與佈局
+- `Home.vue` - 首頁，快速選號入口
+- `Lotto649.vue` - 大樂透專頁，四組 AI 推薦顯示
+- `SuperLotto.vue` - 威力彩查詢
+- `History.vue` - 歷史資料統計
 
-### 版本資訊
-- **專案版本**: 1.5.1 (setup.py)
-- **Python 支援**: 3.6+ (建議 3.9+)
-- **Node.js 支援**: 16+ (建議 18+)
-- **授權條款**: MIT License
-├── setup.cfg                    # 專案元數據
-├── sonar-project.properties     # 程式碼品質分析
-└── start_dev.sh                 # 一鍵開發環境啟動
-```
+**UI/UX 特色**：
+- 響應式設計（手機 xs/sm，平板 md，桌面 lg）
+- 四組號碼卡片佈局（`:md="6"` 一行顯示四組）
+- 號碼球視覺化顯示
+- 載入動畫與骨架屏
+- 錯誤狀態處理
 
-## 🚀 快速開始
+### 5. Docker 容器化部署
 
-### 1. 環境需求
+**服務編排** (docker-compose.yml)：
+- **前端服務** (`frontend`)
+  - Nginx + Vue.js 靜態資源
+  - Port: 8080 → 80
+  - 健康檢查: `/health`
 
-- **Python 3.8+** (建議使用 3.10+)
-- **Node.js 16+** 和 **npm** 或 **yarn**
-- **Google AI API Key** (用於 Gemini AI 功能)
-- **Git** (用於版本控制)
+- **後端服務** (`backend`)
+  - FastAPI + Uvicorn
+  - Port: 8000
+  - 健康檢查: `/health`
 
-### 2. 專案克隆與設定
+- **網路**：`lottery-network` (Bridge)
 
-```bash
-# 克隆專案
-git clone https://github.com/stu01509/TaiwanLotteryCrawler.git
-cd TaiwanLotteryCrawler
+**Nginx 配置** (frontend/nginx.conf)：
+- 反向代理：`/api/*` → `http://backend:8000`
+- 超時設定：300 秒（AI 分析需時較長）
+- CORS 支援
+- SPA 路由支援
+- Gzip 壓縮
 
-# 建立 Python 虛擬環境 (建議)
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# 或 venv\Scripts\activate  # Windows
-
-# 建立環境變數檔案
-cp .env.example .env  # 如果有範例檔案
-# 或手動建立 .env 檔案
-```
-
-### 3. 環境變數設定
-
-建立 `.env` 檔案並設定以下變數：
-```bash
-# Google AI API Key (必要 - 用於 AI 選號功能)
-GOOGLE_AI_API_KEY=your_google_ai_api_key_here
-
-# 可選配置
-FASTAPI_HOST=0.0.0.0
-FASTAPI_PORT=8000
-FRONTEND_PORT=3000
-```
-
-### 4. 一鍵啟動 (推薦)
-
-使用提供的啟動腳本：
-```bash
-chmod +x start_dev.sh
-./start_dev.sh
-```
-
-### 5. 手動啟動
-
-#### 方法一：使用 uv (推薦)
-```bash
-# 安裝 uv (如果尚未安裝)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# 建立虛擬環境並安裝依賴
-uv venv
-source .venv/bin/activate
-uv pip install -r requirements.txt
-
-# 啟動後端
-cd backend && python main.py &
-
-# 啟動前端
-cd frontend && npm install && npm run dev
-```
-
-#### 方法二：傳統方式
-```bash
-# 後端 (FastAPI)
-pip install -r requirements.txt
-cd backend
-python main.py &
-
-# 前端 (Vue.js) - 新終端視窗
-cd frontend
-npm install
-npm run dev
-```
-
-### 6. 訪問應用
-
-- **🌐 前端應用**: http://localhost:3000
-- **🔧 後端 API**: http://localhost:8000  
-- **📖 API 文件**: http://localhost:8000/docs
-- **🔍 API 規格**: http://localhost:8000/redoc
-
-## 🎯 功能特色
-
-### 1. AI 智能選號
-- 使用 Google Gemini 2.5 Pro 分析半年歷史資料
-- 提供冷門號碼組合和熱門號碼組合
-- 詳細的選號理由說明
-
-### 2. 號碼頻率分析
-- 熱門號碼統計 (前10名)
-- 冷門號碼統計 (後10名)
-- 完整的號碼出現頻率報告
-
-### 3. 多彩種支援
-- **大樂透** (6/49+1) - AI 選號功能
-- **威力彩** (6/38+1) - 歷史資料查詢
-- **今彩539** (5/39) - 歷史資料查詢
-
-### 4. 響應式 UI
-- 基於 Element Plus 的現代化界面
-- 手機、平板、電腦完美適配
-- 直觀的資料視覺化
-
-## 📊 API 端點
-
-### 🎲 大樂透相關
-- `GET /api/lotto649` - 獲取大樂透歷史資料
-  - 查詢參數：`year`, `month`
-  - 回應：期別、開獎日期、獎號、特別號
-- `GET /api/lotto649/predict` - AI 智能預測大樂透號碼
-  - 功能：分析半年資料，提供冷門/熱門號碼組合
-  - 回應：推薦號碼、選號理由、頻率統計
-
-### 🎯 其他彩種
-- `GET /api/super_lotto` - 威力彩歷史資料 (6/38+1)
-- `GET /api/daily_cash` - 今彩539歷史資料 (5/39)
-- `GET /api/lotto1224` - 雙贏彩歷史資料 (12/24)
-
-### 📋 查詢參數
-- `year` - 年份 (字串格式，如 "2025")
-- `month` - 月份 (字串格式，如 "08")
-- 預設值：當前年月
-
-### 📖 API 文件
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-- **OpenAPI Schema**: http://localhost:8000/openapi.json
-
-## 🛠️ 技術棧
-
-### 🔧 後端技術
-- **FastAPI 0.104+** - 高效能 Python Web 框架
-- **Pydantic 2.4+** - 資料驗證與序列化
-- **Uvicorn** - ASGI 高效能伺服器
-- **Google Generative AI** - Gemini 2.5 Flash AI 引擎
-- **Requests** - HTTP 客戶端庫
-- **Python-dotenv** - 環境變數管理
-
-### 🎨 前端技術
-- **Vue 3.3+** - 漸進式 JavaScript 框架
-- **Vue Router 4.2+** - 單頁應用路由管理
-- **Element Plus 2.4+** - 企業級 UI 元件庫
-- **Axios 1.5+** - Promise 基礎 HTTP 客戶端
-- **Vite 4.4+** - 次世代前端建構工具
-- **@element-plus/icons-vue** - 圖示元件庫
-
-### 🧪 開發與測試
-- **Pytest 7.4+** - Python 測試框架
-- **Pytest-cov 4.1+** - 測試覆蓋率報告
-- **Flake8 6.0+** - 程式碼風格檢查
-- **Pre-commit 3.3+** - Git hooks 管理
-- **Terminaltables 3.1+** - 終端表格顯示
-
-### 🚀 CI/CD 與品質保證
-- **GitHub Actions** - 自動化 CI/CD 流水線
-- **SonarCloud** - 程式碼品質分析
-- **Codecov** - 測試覆蓋率追蹤
-- **Dependabot** - 依賴更新自動化
-
-### 📡 資料來源
-- **台灣彩券官方 API** - `https://api.taiwanlottery.com`
-  - SSL/TLS 1.3 加密連線
-  - TWCA 憑證認證
-  - RESTful API 設計
+---
 
 ## 🔧 開發指令
 
-### 🐍 後端開發
+### Docker 操作
+
 ```bash
-# 執行所有測試
+# 啟動服務
+docker-compose up -d
+
+# 查看日誌
+docker-compose logs -f [frontend|backend]
+
+# 重新建置
+docker-compose build [frontend|backend]
+
+# 停止服務
+docker-compose down
+
+# 重啟服務
+docker-compose restart [frontend|backend]
+```
+
+### 後端開發
+
+```bash
+# 執行測試
 pytest
 
-# 執行測試並生成覆蓋率報告
+# 測試覆蓋率報告
 pytest --cov=. tests/ --cov-report=html
 
 # 程式碼風格檢查
-flake8
+flake8 --max-line-length=160
 
-# 安裝為開發模式
-pip install -e .
-
-# 啟動開發伺服器 (自動重載)
+# 開發模式啟動
 cd backend && python main.py
-
-# 檢查依賴安全性
-pip-audit
 ```
 
-### 🎨 前端開發
+### 前端開發
+
 ```bash
-# 開發模式 (熱重載)
+# 開發模式（熱重載）
 npm run dev
 
 # 建構生產版本
@@ -471,129 +400,106 @@ npm run build
 
 # 預覽生產版本
 npm run preview
-
-# 依賴檢查
-npm audit
-
-# 依賴更新
-npm update
 ```
 
-### 🧪 測試與品質
-```bash
-# 執行所有測試
-pytest tests/
+---
 
-# 執行特定測試
-pytest tests/test_lottery.py::test_lotto649
+## 📊 專案統計
 
-# 程式碼覆蓋率
-pytest --cov=TaiwanLottery --cov-report=term-missing
+- **程式語言**：Python (後端), JavaScript (前端)
+- **程式碼行數**：~3,000+ 行
+- **測試覆蓋率**：目標 85%+
+- **支援彩種**：9 種台灣彩券
+- **AI 推薦組數**：4 組號碼
+- **API 端點**：6 個主要端點
+- **版本**：v1.5.1
 
-# 程式碼品質檢查
-flake8 --max-line-length=160
-
-# Pre-commit hooks
-pre-commit install
-pre-commit run --all-files
-```
-
-## 📝 使用說明
-
-### 🏠 1. 首頁 (Home.vue)
-- **功能概覽**：系統主要功能介紹
-- **快速選號**：一鍵獲取 AI 推薦號碼
-- **導航中心**：快速跳轉到各功能頁面
-- **響應式設計**：適配各種螢幕尺寸
-
-### 🎲 2. 大樂透 AI 選號 (Lotto649.vue)
-- **智能分析**：AI 分析半年歷史資料 (約 44 期)
-- **雙組推薦**：提供冷門與熱門號碼組合
-- **詳細理由**：說明每組號碼的選擇邏輯
-- **頻率統計**：視覺化號碼出現頻率
-- **歷史趨勢**：號碼熱度變化分析
-
-### 🎯 3. 威力彩查詢 (SuperLotto.vue)
-- **月份查詢**：選擇特定年月查看開獎記錄
-- **完整資訊**：期別、日期、第一區、第二區號碼
-- **分頁瀏覽**：支援大量資料的分頁顯示
-- **資料匯出**：支援 JSON 格式匯出
-
-### 📊 4. 歷史資料查詢 (History.vue)
-- **多彩種支援**：大樂透、威力彩、今彩539、雙贏彩
-- **彈性查詢**：自訂年月範圍
-- **統計分析**：號碼頻率、趨勢分析
-- **資料視覺化**：圖表展示統計結果
+---
 
 ## 🔒 安全性與隱私
 
-### 🛡️ 資料安全
-- **HTTPS 連線**：所有 API 請求使用 TLS 1.3 加密
-- **API Key 保護**：環境變數儲存敏感資訊
-- **無個人資料**：系統不收集使用者個人資訊
-- **本地處理**：AI 分析在本地伺服器執行
+### 資料安全
 
-### 🔐 API 安全
-- **CORS 設定**：限制跨域請求來源
-- **請求驗證**：Pydantic 模型驗證所有輸入
-- **錯誤處理**：安全的錯誤訊息回應
-- **速率限制**：防止 API 濫用 (可選)
+- ✅ **HTTPS 連線**：所有 API 請求使用 TLS 加密
+- ✅ **API Key 保護**：環境變數儲存敏感資訊（`.env` 不納入版控）
+- ✅ **無個人資料**：系統不收集使用者個人資訊
+- ✅ **本地處理**：AI 分析在本地伺服器執行
+
+### API 安全
+
+- ✅ **CORS 設定**：限制跨域請求來源
+- ✅ **請求驗證**：Pydantic 模型驗證所有輸入
+- ✅ **錯誤處理**：安全的錯誤訊息回應
+
+---
 
 ## ⚠️ 重要注意事項
 
-### 🚨 免責聲明
+### 免責聲明
+
 1. **娛樂用途**：本系統僅供娛樂和學習參考
 2. **無中獎保證**：AI 推薦不保證中獎結果
 3. **理性投注**：請量力而為，避免過度投注
 4. **風險自負**：使用者需自行承擔投注風險
 
-### 🔧 技術需求
-1. **API Key 必要**：AI 功能需要有效的 Google AI API Key
+### 技術需求
+
+1. **API Key 必要**：AI 功能需要有效的 [Google AI API Key](https://aistudio.google.com)
 2. **網路連線**：需要穩定的網際網路連線
 3. **瀏覽器支援**：建議使用現代瀏覽器 (Chrome 90+, Firefox 88+, Safari 14+)
 4. **效能建議**：建議 4GB+ RAM 以獲得最佳體驗
 
-### 📱 裝置相容性
-- **桌面電腦**：Windows, macOS, Linux
-- **行動裝置**：iOS 12+, Android 8+
-- **平板電腦**：iPad, Android 平板
-- **響應式設計**：自動適配螢幕尺寸
+---
 
 ## 🤝 貢獻指南
 
-### 📋 如何貢獻
-1. **Fork 專案**到您的 GitHub 帳戶
+### 如何貢獻
+
+1. **Fork** 專案到您的 GitHub 帳戶
 2. **建立分支**：`git checkout -b feature/amazing-feature`
 3. **提交變更**：`git commit -m 'Add amazing feature'`
 4. **推送分支**：`git push origin feature/amazing-feature`
 5. **建立 Pull Request**
 
-### 🐛 回報問題
-- 使用 [GitHub Issues](https://github.com/stu01509/TaiwanLotteryCrawler/issues)
-- 提供詳細的錯誤描述和重現步驟
-- 包含系統環境資訊 (OS, Python 版本等)
+### 回報問題
 
-### 💡 功能建議
-- 在 Issues 中標記為 `enhancement`
-- 詳細描述建議的功能和使用場景
-- 歡迎提供設計草圖或原型
+使用 [GitHub Issues](https://github.com/stu01509/TaiwanLotteryCrawler/issues) 回報問題，請提供：
+- 詳細的錯誤描述和重現步驟
+- 系統環境資訊 (OS, Python/Node.js 版本)
+- 相關日誌或截圖
 
-## 📊 專案統計
+---
 
-- **程式語言**：Python (後端), JavaScript (前端)
-- **程式碼行數**：~2000+ 行
-- **測試覆蓋率**：85%+ (目標)
-- **支援彩種**：4 種台灣彩券
-- **API 端點**：8 個主要端點
-- **版本**：v1.5.1 (持續更新)
+## 📝 更新日誌
+
+### v1.5.1 (最新)
+- ✨ **新增**：AI 推薦從三組擴展為**四組**
+- ✨ **新增**：第四組「均衡組合」推薦
+- 🐛 **修復**：Nginx 反向代理配置（使用 Docker 服務名稱）
+- 🐛 **修復**：AI 分析超時問題（增加 300 秒超時設定）
+- 🔧 **優化**：前端佈局適配四組號碼顯示
+- 🔧 **優化**：後端正則表達式支持四組號碼解析
+
+### v1.5.0
+- ✨ **新增**：Docker 容器化部署支援
+- ✨ **新增**：Nginx 反向代理
+- ✨ **新增**：健康檢查機制
+
+### v1.4.0
+- ✨ **新增**：AI 智能選號功能
+- ✨ **新增**：Google Gemini 2.5 Flash 整合
+- ✨ **新增**：號碼頻率統計分析
+
+---
 
 ## 🔗 相關連結
 
 - **專案首頁**：[GitHub Repository](https://github.com/stu01509/TaiwanLotteryCrawler)
 - **問題回報**：[GitHub Issues](https://github.com/stu01509/TaiwanLotteryCrawler/issues)
-- **版本發布**：[GitHub Releases](https://github.com/stu01509/TaiwanLotteryCrawler/releases)
 - **台灣彩券官網**：[taiwanlottery.com](https://www.taiwanlottery.com)
 - **Google AI Studio**：[aistudio.google.com](https://aistudio.google.com)
+
+---
 
 ## 📄 授權條款
 
