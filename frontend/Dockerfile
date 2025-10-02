@@ -14,7 +14,7 @@ RUN npm ci --only=production
 COPY . .
 
 # 構建應用
-# RUN npm run build
+RUN npm run build
 
 # 第二階段：生產環境
 FROM nginx:alpine AS production-stage
