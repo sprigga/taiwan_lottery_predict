@@ -17,7 +17,7 @@
               <TrendCharts />
             </el-icon>
             <h3>智能選號</h3>
-            <p>運用 Google Gemini AI 分析半年歷史資料，快速獲取三組推薦號碼</p>
+            <p>運用 Google Gemini AI 分析半年歷史資料，快速獲取四組推薦號碼</p>
             <el-button 
               type="primary" 
               @click="getQuickPrediction"
