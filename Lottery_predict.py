@@ -10,6 +10,39 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+# --- 新增 compute_frequency_analysis() 共用函數 (Task 1) ---
+def compute_frequency_analysis(lottery_data):
+    """
+    計算號碼頻率統計，回傳熱門/冷門號碼與完整頻率字典。
+    Args:
+        lottery_data: 彩券開獎資料列表，每筆含 '獎號' 和 '特別號'
+    Returns:
+        dict 含 number_frequency, special_frequency, hot_numbers, cold_numbers
+    """
+    number_frequency = {}
+    special_frequency = {}
+
+    for data in lottery_data:
+        for num in data.get('獎號', []):
+            number_frequency[num] = number_frequency.get(num, 0) + 1
+        special = data.get('特別號')
+        if special is not None:
+            special_frequency[special] = special_frequency.get(special, 0) + 1
+
+    sorted_numbers = sorted(number_frequency.items(), key=lambda x: x[1], reverse=True)
+    hot_numbers = sorted_numbers[:10]
+    cold_numbers = sorted_numbers[-10:] if len(sorted_numbers) >= 10 else sorted_numbers
+
+    return {
+        "number_frequency": number_frequency,
+        "special_frequency": special_frequency,
+        "hot_numbers": hot_numbers,
+        "cold_numbers": cold_numbers,
+        "sorted_numbers": sorted_numbers,
+    }
+# --- 結束 compute_frequency_analysis() ---
+
+
 def get_six_months_lotto649_data():
     """
     擷取大樂透過去半年(6個月)的中獎號碼
