@@ -52,6 +52,13 @@ class BackTimeRequest(BaseModel):
 # 初始化彩券爬蟲
 lottery_crawler = TaiwanLotteryCrawler()
 
+def _resolve_back_time(year: Optional[str], month: Optional[str]) -> list:
+    """解析年月參數，若未提供則使用目前年月"""
+    if year and month:
+        return [year, month]
+    from TaiwanLottery.utils import get_current_year, get_current_month
+    return [str(get_current_year()), str(get_current_month()).zfill(2)]
+
 def _parse_numbers(numbers_str):
     """從號碼字符串解析出整數列表，處理各種分隔符"""
     numbers_str = re.sub(r'[^\d,，、\s]', '', numbers_str)
@@ -175,22 +182,34 @@ async def root():
 async def health_check():
     return {"status": "healthy", "message": "Backend service is running"}
 
+# [原始] get_lotto649 原先內聯解析年月參數，已改用 _resolve_back_time() 共用函數
+# @app.get("/api/lotto649", response_model=List[LotteryData])
+# async def get_lotto649(year: Optional[str] = None, month: Optional[str] = None):
+#     """取得大樂透歷史資料"""
+#     try:
+#         if year and month:
+#             back_time = [year, month]
+#         else:
+#             from TaiwanLottery.utils import get_current_year, get_current_month
+#             back_time = [str(get_current_year()), str(get_current_month()).zfill(2)]
+#         result = lottery_crawler.lotto649(back_time)
+#         if not result:
+#             raise HTTPException(status_code=404, detail="查無資料")
+#         return result
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"資料擷取失敗: {str(e)}")
+
 @app.get("/api/lotto649", response_model=List[LotteryData])
 async def get_lotto649(year: Optional[str] = None, month: Optional[str] = None):
     """取得大樂透歷史資料"""
     try:
-        if year and month:
-            back_time = [year, month]
-        else:
-            # 使用目前年月
-            from TaiwanLottery.utils import get_current_year, get_current_month
-            back_time = [str(get_current_year()), str(get_current_month()).zfill(2)]
-        
+        back_time = _resolve_back_time(year, month)
         result = lottery_crawler.lotto649(back_time)
         if not result:
             raise HTTPException(status_code=404, detail="查無資料")
-        
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"資料擷取失敗: {str(e)}")
 
@@ -262,39 +281,65 @@ async def predict_lotto649():
             error=f"預測過程發生錯誤: {str(e)}"
         )
 
+# [原始] get_super_lotto 原先內聯解析年月參數，已改用 _resolve_back_time() 共用函數
+# @app.get("/api/super_lotto")
+# async def get_super_lotto(year: Optional[str] = None, month: Optional[str] = None):
+#     """取得威力彩歷史資料"""
+#     try:
+#         if year and month:
+#             back_time = [year, month]
+#         else:
+#             from TaiwanLottery.utils import get_current_year, get_current_month
+#             back_time = [str(get_current_year()), str(get_current_month()).zfill(2)]
+#         result = lottery_crawler.super_lotto(back_time)
+#         if not result:
+#             raise HTTPException(status_code=404, detail="查無資料")
+#         return result
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"資料擷取失敗: {str(e)}")
+
 @app.get("/api/super_lotto")
 async def get_super_lotto(year: Optional[str] = None, month: Optional[str] = None):
     """取得威力彩歷史資料"""
     try:
-        if year and month:
-            back_time = [year, month]
-        else:
-            from TaiwanLottery.utils import get_current_year, get_current_month
-            back_time = [str(get_current_year()), str(get_current_month()).zfill(2)]
-        
+        back_time = _resolve_back_time(year, month)
         result = lottery_crawler.super_lotto(back_time)
         if not result:
             raise HTTPException(status_code=404, detail="查無資料")
-        
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"資料擷取失敗: {str(e)}")
+
+# [原始] get_daily_cash 原先內聯解析年月參數，已改用 _resolve_back_time() 共用函數
+# @app.get("/api/daily_cash")
+# async def get_daily_cash(year: Optional[str] = None, month: Optional[str] = None):
+#     """取得今彩539歷史資料"""
+#     try:
+#         if year and month:
+#             back_time = [year, month]
+#         else:
+#             from TaiwanLottery.utils import get_current_year, get_current_month
+#             back_time = [str(get_current_year()), str(get_current_month()).zfill(2)]
+#         result = lottery_crawler.daily_cash(back_time)
+#         if not result:
+#             raise HTTPException(status_code=404, detail="查無資料")
+#         return result
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"資料擷取失敗: {str(e)}")
 
 @app.get("/api/daily_cash")
 async def get_daily_cash(year: Optional[str] = None, month: Optional[str] = None):
     """取得今彩539歷史資料"""
     try:
-        if year and month:
-            back_time = [year, month]
-        else:
-            from TaiwanLottery.utils import get_current_year, get_current_month
-            back_time = [str(get_current_year()), str(get_current_month()).zfill(2)]
-        
+        back_time = _resolve_back_time(year, month)
         result = lottery_crawler.daily_cash(back_time)
         if not result:
             raise HTTPException(status_code=404, detail="查無資料")
-        
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"資料擷取失敗: {str(e)}")
 
