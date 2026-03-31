@@ -13,7 +13,7 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from TaiwanLottery import TaiwanLotteryCrawler
-from Lottery_predict import get_six_months_lotto649_data, predict_lottery_numbers_with_ai
+from Lottery_predict import get_six_months_lotto649_data, predict_lottery_numbers_with_ai, compute_frequency_analysis
 
 app = FastAPI(
     title="台灣彩券 API",
@@ -197,25 +197,24 @@ async def predict_lotto649():
             "oldest_period": lotto649_data[-1]['期別']
         }
         
-        # 計算號碼頻率統計
-        number_frequency = {}
-        special_frequency = {}
-        
-        for data in lotto649_data:
-            for num in data['獎號']:
-                number_frequency[num] = number_frequency.get(num, 0) + 1
-            special_frequency[data['特別號']] = special_frequency.get(data['特別號'], 0) + 1
-        
-        # 找出熱門和冷門號碼
-        sorted_numbers = sorted(number_frequency.items(), key=lambda x: x[1], reverse=True)
-        hot_numbers = sorted_numbers[:10]  # 前10個熱門號碼
-        cold_numbers = sorted_numbers[-10:] if len(sorted_numbers) >= 10 else sorted_numbers  # 後10個冷門號碼
-        
+        # [原始] 以下頻率計算已移至 compute_frequency_analysis() 共用函數，避免與 Lottery_predict.py 重複
+        # number_frequency = {}
+        # special_frequency = {}
+        # for data in lotto649_data:
+        #     for num in data['獎號']:
+        #         number_frequency[num] = number_frequency.get(num, 0) + 1
+        #     special_frequency[data['特別號']] = special_frequency.get(data['特別號'], 0) + 1
+        # sorted_numbers = sorted(number_frequency.items(), key=lambda x: x[1], reverse=True)
+        # hot_numbers = sorted_numbers[:10]
+        # cold_numbers = sorted_numbers[-10:] if len(sorted_numbers) >= 10 else sorted_numbers
+
+        # 計算號碼頻率統計（使用共用函數，避免與 Lottery_predict.py 重複計算）
+        freq = compute_frequency_analysis(lotto649_data)
         statistics["frequency_analysis"] = {
-            "hot_numbers": hot_numbers,
-            "cold_numbers": cold_numbers,
-            "number_frequency": dict(sorted_numbers),
-            "special_frequency": dict(sorted(special_frequency.items(), key=lambda x: x[1], reverse=True))
+            "hot_numbers": freq["hot_numbers"],
+            "cold_numbers": freq["cold_numbers"],
+            "number_frequency": dict(freq["sorted_numbers"]),
+            "special_frequency": dict(sorted(freq["special_frequency"].items(), key=lambda x: x[1], reverse=True))
         }
         
         # 解析 AI 預測文字，提取結構化的推薦號碼
