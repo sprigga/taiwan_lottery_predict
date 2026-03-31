@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
-import json
+# import json
 import os
 import sys
 import re
@@ -51,181 +51,88 @@ class BackTimeRequest(BaseModel):
 # 初始化彩券爬蟲
 lottery_crawler = TaiwanLotteryCrawler()
 
+def _parse_numbers(numbers_str):
+    """從號碼字符串解析出整數列表，處理各種分隔符"""
+    numbers_str = re.sub(r'[^\d,，、\s]', '', numbers_str)
+    result = []
+    for num_str in re.split(r'[,，、\s]+', numbers_str):
+        if num_str.strip().isdigit():
+            result.append(int(num_str.strip()))
+    return result
+
+
+_SET_TYPES = ["冷門號碼組合", "熱門號碼組合", "熱門 + 冷門 混合號碼組合", "均衡組合"]
+
+
+def _build_set(set_type, numbers_str, special_number_str):
+    """解析一組號碼並構建推薦字典，失敗返回 None"""
+    regular_numbers = _parse_numbers(numbers_str)
+    if len(regular_numbers) != 6:
+        return None
+    return {
+        "type": set_type,
+        "regular_numbers": regular_numbers,
+        "special_number": int(special_number_str),
+        "reason": f"基於歷史資料分析的{set_type}"
+    }
+
+
+def _build_sets_from_matches(matches, has_type=False):
+    """從匹配結果構建推薦號碼列表"""
+    sets = []
+    for i, match in enumerate(matches[:4]):
+        if has_type and len(match) == 3:
+            set_type, numbers_str, special_number_str = match
+        elif len(match) == 2:
+            set_type = _SET_TYPES[i] if i < len(_SET_TYPES) else f"第{i+1}組"
+            numbers_str, special_number_str = match
+        else:
+            continue
+        s = _build_set(set_type, numbers_str, special_number_str)
+        if s:
+            sets.append(s)
+    return sets
+
+
 def parse_ai_prediction(ai_prediction_text):
     """
-    解析 AI 預測文字，提取出三組號碼
+    解析 AI 預測文字，提取出推薦號碼組合。
+    依序嘗試多種格式進行匹配。
     """
     if not ai_prediction_text:
         return None
-    
-    recommended_sets = []
-    
-    # 根據 Lottery_predict.py 中的提示詞格式，匹配以下格式：
-    # 第一組(冷門號碼組合): [號碼1, 號碼2, 號碼3, 號碼4, 號碼5, 號碼6] + 特別號: 號碼
-    # 第二組(熱門號碼組合): [號碼1, 號碼2, 號碼3, 號碼4, 號碼5, 號碼6] + 特別號: 號碼
-    # 第三組(熱門 + 冷門 混合號碼組合): [號碼1, 號碼2, 號碼3, 號碼4, 號碼5, 號碼6] + 特別號: 號碼
-    
-    # 主要匹配模式：第X組(類型): [數字列表] + 特別號: 數字
-    pattern = r'第[一二三四]組\(([^)]+)\):\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
+
+    # 格式1: 第X組(類型): [數字列表] + 特別號: 數字（支援星號前綴）
+    pattern = r'\*{0,2}第[一二三四]組\(([^)]+)\):\*{0,2}\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
     matches = re.findall(pattern, ai_prediction_text)
-    
-    # 如果沒匹配到，嘗試更寬鬆的格式（可能有額外的符號或格式）
-    if not matches:
-        # 匹配帶有星號或其他格式的版本
-        pattern = r'\*?\*?第[一二三四]組\(([^)]+)\):\*?\*?\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
-        matches = re.findall(pattern, ai_prediction_text)
-    
-    # 如果還是沒匹配到，嘗試 Markdown 格式：**彩券號碼:** [數字列表] + **特別號:** 數字
-    if not matches:
-        # 匹配 Markdown 格式的彩券號碼
-        markdown_pattern = r'\*\*彩券號碼:\*\*\s*\[([^\]]+)\]\s*\+\s*\*\*特別號:\*\*\s*(\d+)'
-        markdown_matches = re.findall(markdown_pattern, ai_prediction_text)
-        
-        if len(markdown_matches) >= 4:
-            # 確定第一組是冷門，第二組是熱門，第三組是混合，第四組是均衡（根據文本中的順序）
-            for i, match in enumerate(markdown_matches[:4]):
-                numbers_str, special_number_str = match
-                # 解析號碼字符串，處理各種可能的分隔符
-                numbers_str = re.sub(r'[^\d,，、\s]', '', numbers_str)  # 移除非數字、逗號、空格的字符
-                regular_numbers = []
-                for num_str in re.split(r'[,，、\s]+', numbers_str):
-                    if num_str.strip().isdigit():
-                        regular_numbers.append(int(num_str.strip()))
-                
-                if len(regular_numbers) == 6:  # 確保有6個號碼
-                    special_number = int(special_number_str)
-                    # 根據文本中的順序判斷類型
-                    if i == 0:
-                        set_type = "冷門號碼組合"
-                    elif i == 1:
-                        set_type = "熱門號碼組合"
-                    elif i == 2:
-                        set_type = "熱門 + 冷門 混合號碼組合"
-                    else:
-                        set_type = "均衡組合"
-                    reason = f"基於歷史資料分析的{set_type}"
-                    
-                    recommended_sets.append({
-                        "type": set_type,
-                        "regular_numbers": regular_numbers,
-                        "special_number": special_number,
-                        "reason": reason
-                    })
-    
-    # 如果還是沒匹配到，嘗試新增的AI LLM格式1: **獎號**: [數字列表] **特別號**: 數字
-    if not matches and not markdown_matches:
-        pattern1 = r'\*\*獎號\*\*:\s*\[([^\]]+)\]\s*\*\*特別號\*\*:\s*(\d+)'
-        matches1 = re.findall(pattern1, ai_prediction_text)
-        
-        if matches1:
-            for i, match in enumerate(matches1[:4]):
-                numbers_str, special_number_str = match
-                numbers_str = re.sub(r'[^\d,，、\s]', '', numbers_str)
-                regular_numbers = []
-                for num_str in re.split(r'[,，、\s]+', numbers_str):
-                    if num_str.strip().isdigit():
-                        regular_numbers.append(int(num_str.strip()))
-                
-                if len(regular_numbers) == 6:
-                    special_number = int(special_number_str)
-                    if i == 0:
-                        set_type = "冷門號碼組合"
-                    elif i == 1:
-                        set_type = "熱門號碼組合"
-                    elif i == 2:
-                        set_type = "熱門 + 冷門 混合號碼組合"
-                    else:
-                        set_type = "均衡組合"
-                    reason = f"基於歷史資料分析的{set_type}"
+    if matches:
+        return _build_sets_from_matches(matches, has_type=True)
 
-                    recommended_sets.append({
-                        "type": set_type,
-                        "regular_numbers": regular_numbers,
-                        "special_number": special_number,
-                        "reason": reason
-                    })
+    # 格式2: Markdown 格式 **彩券號碼:** [數字列表] + **特別號:** 數字
+    markdown_pattern = r'\*\*彩券號碼:\*\*\s*\[([^\]]+)\]\s*\+\s*\*\*特別號:\*\*\s*(\d+)'
+    markdown_matches = re.findall(markdown_pattern, ai_prediction_text)
+    if len(markdown_matches) >= 4:
+        return _build_sets_from_matches(markdown_matches)
 
-    # 如果還是沒匹配到，嘗試新的格式2: **第X組(類型):** [數字列表] + 特別號: 數字
-    if not matches and not markdown_matches and not recommended_sets:
-        pattern2 = r'\*\*第[一二三四]組\(([^)]+)\):\*\*\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
-        matches2 = re.findall(pattern2, ai_prediction_text)
+    # 格式3: **獎號**: [數字列表] **特別號**: 數字
+    pattern1 = r'\*\*獎號\*\*:\s*\[([^\]]+)\]\s*\*\*特別號\*\*:\s*(\d+)'
+    matches1 = re.findall(pattern1, ai_prediction_text)
+    if matches1:
+        return _build_sets_from_matches(matches1)
 
-        if matches2:
-            for match in matches2[:4]:
-                set_type, numbers_str, special_number_str = match
-                numbers_str = re.sub(r'[^\d,，、\s]', '', numbers_str)
-                regular_numbers = []
-                for num_str in re.split(r'[,，、\s]+', numbers_str):
-                    if num_str.strip().isdigit():
-                        regular_numbers.append(int(num_str.strip()))
-                
-                if len(regular_numbers) == 6:
-                    special_number = int(special_number_str)
-                    reason = f"基於歷史資料分析的{set_type}"
-                    
-                    recommended_sets.append({
-                        "type": set_type,
-                        "regular_numbers": regular_numbers,
-                        "special_number": special_number,
-                        "reason": reason
-                    })
-    
-    # 如果還是沒匹配到，嘗試最簡單的格式（直接匹配數字組合）
-    if not matches and not recommended_sets:
-        pattern = r'\[([^\]]+)\]\s*\+\s*(?:\*\*)?特別號(?:\*\*)?:\s*(\d+)'
-        simple_matches = re.findall(pattern, ai_prediction_text)
-        if len(simple_matches) >= 4:
-            for i, match in enumerate(simple_matches[:4]):
-                numbers_str, special_number_str = match
-                # 解析號碼字符串，處理各種可能的分隔符
-                numbers_str = re.sub(r'[^\d,，、\s]', '', numbers_str)  # 移除非數字、逗號、空格的字符
-                regular_numbers = []
-                for num_str in re.split(r'[,，、\s]+', numbers_str):
-                    if num_str.strip().isdigit():
-                        regular_numbers.append(int(num_str.strip()))
-                
-                if len(regular_numbers) == 6:  # 確保有6個號碼
-                    special_number = int(special_number_str)
-                    if i == 0:
-                        set_type = "冷門號碼組合"
-                    elif i == 1:
-                        set_type = "熱門號碼組合"
-                    elif i == 2:
-                        set_type = "熱門 + 冷門 混合號碼組合"
-                    else:
-                        set_type = "均衡組合"
-                    reason = f"基於歷史資料分析的{set_type}"
+    # 格式4: **第X組(類型):** [數字列表] + 特別號: 數字
+    pattern2 = r'\*\*第[一二三四]組\(([^)]+)\):\*\*\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
+    matches2 = re.findall(pattern2, ai_prediction_text)
+    if matches2:
+        return _build_sets_from_matches(matches2, has_type=True)
 
-                    recommended_sets.append({
-                        "type": set_type,
-                        "regular_numbers": regular_numbers,
-                        "special_number": special_number,
-                        "reason": reason
-                    })
-    else:
-        # 處理帶類型的匹配結果
-        for match in matches[:4]:
-            if len(match) == 3:  # 帶類型的格式
-                set_type, numbers_str, special_number_str = match
-                # 解析號碼字符串，處理各種可能的分隔符和格式
-                numbers_str = re.sub(r'[^\d,，、\s]', '', numbers_str)  # 移除非數字、逗號、空格的字符
-                regular_numbers = []
-                for num_str in re.split(r'[,，、\s]+', numbers_str):
-                    if num_str.strip().isdigit():
-                        regular_numbers.append(int(num_str.strip()))
-                
-                if len(regular_numbers) == 6:  # 確保有6個號碼
-                    special_number = int(special_number_str)
-                    reason = f"基於歷史資料分析的{set_type}"
-                    
-                    recommended_sets.append({
-                        "type": set_type,
-                        "regular_numbers": regular_numbers,
-                        "special_number": special_number,
-                        "reason": reason
-                    })
-    
-    return recommended_sets if recommended_sets else None
+    # 格式5: 最簡單格式 [數字列表] + 特別號: 數字
+    simple_pattern = r'\[([^\]]+)\]\s*\+\s*(?:\*\*)?特別號(?:\*\*)?:\s*(\d+)'
+    simple_matches = re.findall(simple_pattern, ai_prediction_text)
+    if len(simple_matches) >= 4:
+        return _build_sets_from_matches(simple_matches)
+
+    return None
 
 @app.get("/")
 async def root():
@@ -313,11 +220,7 @@ async def predict_lotto649():
         
         # 解析 AI 預測文字，提取結構化的推薦號碼
         recommended_sets = parse_ai_prediction(ai_prediction) if ai_prediction else None
-        
-        # 調試信息
-        print(f"AI prediction length: {len(ai_prediction) if ai_prediction else 0}")
-        print(f"Recommended sets: {recommended_sets}")
-        
+
         response_data = {
             "status": "success",
             "data": statistics,
@@ -327,8 +230,7 @@ async def predict_lotto649():
         # 如果成功解析出推薦號碼，加入回應中
         if recommended_sets:
             response_data["recommended_sets"] = recommended_sets
-            print("Added recommended_sets to response")
-        
+
         return response_data
         
     except Exception as e:

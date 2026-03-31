@@ -35,7 +35,7 @@
 
           <!-- 資料表格 -->
           <div v-else-if="lotteryData.length > 0" class="data-section">
-            <el-table :data="lotteryData" stripe style="width: 100%">
+            <el-table :data="paginatedData" stripe style="width: 100%">
               <el-table-column prop="期別" label="期別" width="100" />
               <el-table-column prop="開獎日期" label="開獎日期" width="120">
                 <template #default="scope">
@@ -106,14 +106,10 @@
 <script>
 import { ref, computed } from 'vue'
 import axios from 'axios'
-import { Calendar } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 export default {
   name: 'SuperLotto',
-  components: {
-    Calendar
-  },
   setup() {
     const loading = ref(false)
     const lotteryData = ref([])
@@ -165,7 +161,8 @@ export default {
 
     return {
       loading,
-      lotteryData: paginatedData,
+      lotteryData,
+      paginatedData,
       error,
       selectedDate,
       currentPage,

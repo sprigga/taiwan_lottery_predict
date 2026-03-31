@@ -153,16 +153,10 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-import { TrendCharts, DataAnalysis, Money } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 export default {
   name: 'Home',
-  components: {
-    TrendCharts,
-    DataAnalysis,
-    Money
-  },
   setup() {
     const router = useRouter()
     const quickLoading = ref(false)
@@ -173,14 +167,12 @@ export default {
     const getQuickPrediction = async () => {
       // 防止重複請求
       if (quickLoading.value) {
-        console.log('Request already in progress, ignoring...')
         return
       }
 
       // 如果已有請求在進行，取消它
       if (currentRequest) {
         currentRequest.abort()
-        console.log('Cancelled previous request')
       }
 
       quickLoading.value = true
@@ -197,7 +189,6 @@ export default {
         
         if (response.data.status === 'success') {
           quickPrediction.value = response.data
-          console.log('Quick prediction data:', quickPrediction.value)
           ElMessage.success('快速選號完成！')
         } else {
           predictionError.value = response.data.error || '獲取推薦號碼失敗'
@@ -205,12 +196,10 @@ export default {
         }
       } catch (err) {
         if (axios.isCancel(err)) {
-          console.log('Request was cancelled')
           return
         }
         predictionError.value = err.response?.data?.detail || err.message || '網路連接失敗'
         ElMessage.error(predictionError.value)
-        console.error('Quick prediction error:', err)
       } finally {
         currentRequest = null
         quickLoading.value = false
@@ -218,15 +207,17 @@ export default {
     }
 
     const navigateToDetail = () => {
-      console.log('Navigate to detail called, quickPrediction:', quickPrediction.value)
       if (quickPrediction.value) {
-        // Pass prediction data through sessionStorage
-        const predictionData = JSON.stringify(quickPrediction.value)
-        console.log('Storing prediction data:', predictionData)
-        sessionStorage.setItem('lotto649_prediction', predictionData)
+        // 只存儲結構化數據，避免 sessionStorage 容量限制
+        const lightData = {
+          status: quickPrediction.value.status,
+          recommended_sets: quickPrediction.value.recommended_sets,
+          data: quickPrediction.value.data,
+          ai_prediction: (quickPrediction.value.ai_prediction || '').substring(0, 5000)
+        }
+        sessionStorage.setItem('lotto649_prediction', JSON.stringify(lightData))
         router.push('/lotto649')
       } else {
-        console.log('No prediction data available, navigating without data')
         router.push('/lotto649')
       }
     }

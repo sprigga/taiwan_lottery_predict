@@ -10,12 +10,13 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.1.0",
     "axios": "^1.5.0",
+    "echarts": "^6.0.0",
     "element-plus": "^2.4.0",
     "vue": "^3.3.0",
     "vue-router": "^4.2.0"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^4.4.0",
-    "vite": "^7.1.8"
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.0"
   }
 }

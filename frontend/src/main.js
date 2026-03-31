@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import { TrendCharts, DataAnalysis, Money, Calendar } from '@element-plus/icons-vue'
 
 import App from './App.vue'
 import Home from './views/Home.vue'
@@ -24,10 +24,11 @@ const router = createRouter({
 
 const app = createApp(App)
 
-// 註冊所有 Element Plus 圖示
-for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component)
-}
+// 只註冊實際使用的圖示
+app.component('TrendCharts', TrendCharts)
+app.component('DataAnalysis', DataAnalysis)
+app.component('Money', Money)
+app.component('Calendar', Calendar)
 
 app.use(router)
 app.use(ElementPlus)

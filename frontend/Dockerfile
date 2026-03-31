@@ -8,7 +8,10 @@ WORKDIR /app
 COPY package*.json ./
 
 # 安裝依賴
-RUN npm ci --only=production
+# RUN npm ci --only=production
+
+# 安裝依賴(包含 devDependencies,因為需要 vite/rollup 來建置)
+RUN npm ci
 
 # 複製源代碼
 COPY . .

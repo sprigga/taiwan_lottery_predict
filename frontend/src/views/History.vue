@@ -212,14 +212,10 @@
 <script>
 import { ref, computed } from 'vue'
 import axios from 'axios'
-import { DataAnalysis } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 export default {
   name: 'History',
-  components: {
-    DataAnalysis
-  },
   setup() {
     const loading = ref(false)
     const historyData = ref([])

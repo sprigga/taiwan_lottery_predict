@@ -189,14 +189,10 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-import { TrendCharts } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 export default {
   name: 'Lotto649',
-  components: {
-    TrendCharts
-  },
   setup() {
     const router = useRouter()
     const loading = ref(false)
@@ -228,12 +224,10 @@ export default {
     // Check for prediction data from sessionStorage when component mounts
     onMounted(() => {
       const storedPrediction = sessionStorage.getItem('lotto649_prediction')
-      console.log('Stored prediction:', storedPrediction)
-      
+
       if (storedPrediction) {
         try {
           const parsedPrediction = JSON.parse(storedPrediction)
-          console.log('Parsed prediction:', parsedPrediction)
           prediction.value = parsedPrediction
           // Clear the stored data after using it
           sessionStorage.removeItem('lotto649_prediction')
