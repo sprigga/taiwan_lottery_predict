@@ -210,26 +210,31 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import { useLotteryFetch } from '../composables/useLotteryFetch'
+import { formatDate } from '../utils/dateFormat'
 
 export default {
   name: 'History',
   setup() {
-    const loading = ref(false)
-    const historyData = ref([])
-    const error = ref('')
+    // [原始] const loading = ref(false)
+    // [原始] const historyData = ref([])
+    // [原始] const error = ref('')
+    // [原始] const currentPage = ref(1)
+    // [原始] const pageSize = 10
+    // 使用 composable 共用 loading、error、currentPage、pageSize、paginatedData
+    // 注意：保留原始 fetchData，因為它有動態 endpoint 邏輯（依據 selectedLottery 決定 API 路徑）
+    const { data: historyData, loading, error, currentPage, pageSize, paginatedData, handlePageChange } = useLotteryFetch('')
     const selectedLottery = ref('')
     const selectedDate = ref('')
-    const currentPage = ref(1)
-    const pageSize = 10
 
-    const paginatedData = computed(() => {
-      const start = (currentPage.value - 1) * pageSize
-      const end = start + pageSize
-      return historyData.value.slice(start, end)
-    })
+    // [原始] const paginatedData = computed(() => {
+    // [原始]   const start = (currentPage.value - 1) * pageSize
+    // [原始]   const end = start + pageSize
+    // [原始]   return historyData.value.slice(start, end)
+    // [原始] })
 
     const fetchData = async () => {
       if (!selectedLottery.value || !selectedDate.value) {
@@ -258,13 +263,15 @@ export default {
       }
     }
 
-    const handlePageChange = (page) => {
-      currentPage.value = page
-    }
+    // [原始] const handlePageChange = (page) => {
+    // [原始]   currentPage.value = page
+    // [原始] }
+    // handlePageChange 改由 useLotteryFetch composable 提供
 
-    const formatDate = (dateString) => {
-      return dateString.substring(0, 10)
-    }
+    // [原始] const formatDate = (dateString) => {
+    // [原始]   return dateString.substring(0, 10)
+    // [原始] }
+    // formatDate 改由 utils/dateFormat.js 提供
 
     const getLotteryName = (type) => {
       const names = {

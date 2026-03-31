@@ -104,60 +104,64 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
-import axios from 'axios'
-import { ElMessage } from 'element-plus'
+import { ref } from 'vue'
+import { useLotteryFetch } from '../composables/useLotteryFetch'
+import { formatDate } from '../utils/dateFormat'
 
 export default {
   name: 'SuperLotto',
   setup() {
-    const loading = ref(false)
-    const lotteryData = ref([])
-    const error = ref('')
+    // [原始] const loading = ref(false)
+    // [原始] const lotteryData = ref([])
+    // [原始] const error = ref('')
+    // [原始] const currentPage = ref(1)
+    // [原始] const pageSize = 10
     const selectedDate = ref('')
-    const currentPage = ref(1)
-    const pageSize = 10
 
-    const paginatedData = computed(() => {
-      const start = (currentPage.value - 1) * pageSize
-      const end = start + pageSize
-      return lotteryData.value.slice(start, end)
-    })
+    // 使用 composable 共用 loading、error、currentPage、pageSize、paginatedData、fetchData
+    const { data: lotteryData, loading, error, currentPage, pageSize, paginatedData, fetchData: _fetchData, handlePageChange } = useLotteryFetch('/api/super_lotto')
 
-    const fetchData = async () => {
-      if (!selectedDate.value) {
-        ElMessage.warning('請先選擇年月')
-        return
-      }
+    // [原始] const paginatedData = computed(() => {
+    // [原始]   const start = (currentPage.value - 1) * pageSize
+    // [原始]   const end = start + pageSize
+    // [原始]   return lotteryData.value.slice(start, end)
+    // [原始] })
 
-      loading.value = true
-      error.value = ''
-      lotteryData.value = []
+    // [原始] const fetchData = async () => {
+    // [原始]   if (!selectedDate.value) {
+    // [原始]     ElMessage.warning('請先選擇年月')
+    // [原始]     return
+    // [原始]   }
+    // [原始]   loading.value = true
+    // [原始]   error.value = ''
+    // [原始]   lotteryData.value = []
+    // [原始]   try {
+    // [原始]     const [year, month] = selectedDate.value.split('-')
+    // [原始]     const response = await axios.get('/api/super_lotto', {
+    // [原始]       params: { year, month }
+    // [原始]     })
+    // [原始]     lotteryData.value = response.data
+    // [原始]     currentPage.value = 1
+    // [原始]     ElMessage.success(`成功載入 ${response.data.length} 筆資料`)
+    // [原始]   } catch (err) {
+    // [原始]     error.value = err.response?.data?.detail || err.message || '網路連接失敗'
+    // [原始]     ElMessage.error(error.value)
+    // [原始]   } finally {
+    // [原始]     loading.value = false
+    // [原始]   }
+    // [原始] }
+    // fetchData 改由 useLotteryFetch composable 提供，此 wrapper 傳入 selectedDate
+    const fetchData = () => _fetchData(selectedDate.value)
 
-      try {
-        const [year, month] = selectedDate.value.split('-')
-        const response = await axios.get('/api/super_lotto', {
-          params: { year, month }
-        })
-        
-        lotteryData.value = response.data
-        currentPage.value = 1
-        ElMessage.success(`成功載入 ${response.data.length} 筆資料`)
-      } catch (err) {
-        error.value = err.response?.data?.detail || err.message || '網路連接失敗'
-        ElMessage.error(error.value)
-      } finally {
-        loading.value = false
-      }
-    }
+    // [原始] const handlePageChange = (page) => {
+    // [原始]   currentPage.value = page
+    // [原始] }
+    // handlePageChange 改由 useLotteryFetch composable 提供
 
-    const handlePageChange = (page) => {
-      currentPage.value = page
-    }
-
-    const formatDate = (dateString) => {
-      return dateString.substring(0, 10)
-    }
+    // [原始] const formatDate = (dateString) => {
+    // [原始]   return dateString.substring(0, 10)
+    // [原始] }
+    // formatDate 改由 utils/dateFormat.js 提供
 
     return {
       loading,
