@@ -124,35 +124,39 @@ def predict_lottery_numbers_with_ai(lottery_data):
             data_summary += f"第{data['期別']}期 ({data['開獎日期'][:10]}): 獎號 {data['獎號']} | 特別號 {data['特別號']}\n"
             # print(f"data_summary_期別: {data_summary}")
             
-        # 統計所有號碼出現頻率
-        number_frequency = {}
-        special_frequency = {}
-        
-        for data in lottery_data:
-            # 統計獎號頻率
-            for num in data['獎號']:
-                number_frequency[num] = number_frequency.get(num, 0) + 1
-            # 統計特別號頻率
-            special_frequency[data['特別號']] = special_frequency.get(data['特別號'], 0) + 1
-        
+        # [原始] 以下頻率統計已改為呼叫 compute_frequency_analysis() 共用函數，避免重複計算：
+        # number_frequency = {}
+        # special_frequency = {}
+        # for data in lottery_data:
+        #     for num in data['獎號']:
+        #         number_frequency[num] = number_frequency.get(num, 0) + 1
+        #     special_frequency[data['特別號']] = special_frequency.get(data['特別號'], 0) + 1
+        # sorted_numbers = sorted(number_frequency.items(), key=lambda x: x[1], reverse=True)
+        # sorted_special = sorted(special_frequency.items(), key=lambda x: x[1], reverse=True)
+
+        # 使用共用頻率分析函數
+        freq = compute_frequency_analysis(lottery_data)
+        number_frequency = freq["number_frequency"]
+        special_frequency = freq["special_frequency"]
+        sorted_numbers = freq["sorted_numbers"]
+        sorted_special = sorted(special_frequency.items(), key=lambda x: x[1], reverse=True)
+
         # 加入完整號碼頻率統計
         data_summary += "\n完整獎號出現頻率統計 (1-49號碼):\n"
-        sorted_numbers = sorted(number_frequency.items(), key=lambda x: x[1], reverse=True)
-        for num, freq in sorted_numbers:
-            data_summary += f"號碼 {num}: {freq} 次\n"
-        
+        for num, freq_count in sorted_numbers:
+            data_summary += f"號碼 {num}: {freq_count} 次\n"
+
         # 找出從未出現的號碼
         all_possible_numbers = set(range(1, 50))
         appeared_numbers = set(number_frequency.keys())
         never_appeared = all_possible_numbers - appeared_numbers
         if never_appeared:
             data_summary += f"\n半年內從未出現的獎號: {sorted(never_appeared)}\n"
-        
+
         data_summary += "\n完整特別號出現頻率統計:\n"
-        sorted_special = sorted(special_frequency.items(), key=lambda x: x[1], reverse=True)
-        for num, freq in sorted_special:
-            data_summary += f"特別號 {num}: {freq} 次\n"
-        
+        for num, freq_count in sorted_special:
+            data_summary += f"特別號 {num}: {freq_count} 次\n"
+
         # 找出從未出現的特別號
         appeared_special = set(special_frequency.keys())
         never_appeared_special = all_possible_numbers - appeared_special
