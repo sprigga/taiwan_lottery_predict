@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 # import json
+import json
 import os
 import sys
 import re
@@ -94,45 +95,68 @@ def _build_sets_from_matches(matches, has_type=False):
     return sets
 
 
+# [原始] 以下 parse_ai_prediction 已重構為 JSON 解析，原始 regex 多格式匹配保留如下：
+# def parse_ai_prediction(ai_prediction_text):
+#     if not ai_prediction_text:
+#         return None
+#     pattern = r'\*{0,2}第[一二三四]組\(([^)]+)\):\*{0,2}\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
+#     matches = re.findall(pattern, ai_prediction_text)
+#     if matches:
+#         return _build_sets_from_matches(matches, has_type=True)
+#     markdown_pattern = r'\*\*彩券號碼:\*\*\s*\[([^\]]+)\]\s*\+\s*\*\*特別號:\*\*\s*(\d+)'
+#     markdown_matches = re.findall(markdown_pattern, ai_prediction_text)
+#     if len(markdown_matches) >= 4:
+#         return _build_sets_from_matches(markdown_matches)
+#     pattern1 = r'\*\*獎號\*\*:\s*\[([^\]]+)\]\s*\*\*特別號\*\*:\s*(\d+)'
+#     matches1 = re.findall(pattern1, ai_prediction_text)
+#     if matches1:
+#         return _build_sets_from_matches(matches1)
+#     pattern2 = r'\*\*第[一二三四]組\(([^)]+)\):\*\*\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
+#     matches2 = re.findall(pattern2, ai_prediction_text)
+#     if matches2:
+#         return _build_sets_from_matches(matches2, has_type=True)
+#     simple_pattern = r'\[([^\]]+)\]\s*\+\s*(?:\*\*)?特別號(?:\*\*)?:\s*(\d+)'
+#     simple_matches = re.findall(simple_pattern, ai_prediction_text)
+#     if len(simple_matches) >= 4:
+#         return _build_sets_from_matches(simple_matches)
+#     return None
 def parse_ai_prediction(ai_prediction_text):
     """
-    解析 AI 預測文字，提取出推薦號碼組合。
-    依序嘗試多種格式進行匹配。
+    解析 AI 預測文字。要求 AI 輸出 JSON 陣列，直接用 json.loads() 解析。
+    相容 ```json ... ``` markdown 包裝格式。
     """
     if not ai_prediction_text:
         return None
 
-    # 格式1: 第X組(類型): [數字列表] + 特別號: 數字（支援星號前綴）
-    pattern = r'\*{0,2}第[一二三四]組\(([^)]+)\):\*{0,2}\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
-    matches = re.findall(pattern, ai_prediction_text)
-    if matches:
-        return _build_sets_from_matches(matches, has_type=True)
+    # 移除可能的 markdown ```json ... ``` 包裝
+    text = ai_prediction_text.strip()
+    json_block = re.search(r'```(?:json)?\s*([\s\S]+?)\s*```', text)
+    if json_block:
+        text = json_block.group(1).strip()
 
-    # 格式2: Markdown 格式 **彩券號碼:** [數字列表] + **特別號:** 數字
-    markdown_pattern = r'\*\*彩券號碼:\*\*\s*\[([^\]]+)\]\s*\+\s*\*\*特別號:\*\*\s*(\d+)'
-    markdown_matches = re.findall(markdown_pattern, ai_prediction_text)
-    if len(markdown_matches) >= 4:
-        return _build_sets_from_matches(markdown_matches)
-
-    # 格式3: **獎號**: [數字列表] **特別號**: 數字
-    pattern1 = r'\*\*獎號\*\*:\s*\[([^\]]+)\]\s*\*\*特別號\*\*:\s*(\d+)'
-    matches1 = re.findall(pattern1, ai_prediction_text)
-    if matches1:
-        return _build_sets_from_matches(matches1)
-
-    # 格式4: **第X組(類型):** [數字列表] + 特別號: 數字
-    pattern2 = r'\*\*第[一二三四]組\(([^)]+)\):\*\*\s*\[([^\]]+)\]\s*\+\s*特別號:\s*(\d+)'
-    matches2 = re.findall(pattern2, ai_prediction_text)
-    if matches2:
-        return _build_sets_from_matches(matches2, has_type=True)
-
-    # 格式5: 最簡單格式 [數字列表] + 特別號: 數字
-    simple_pattern = r'\[([^\]]+)\]\s*\+\s*(?:\*\*)?特別號(?:\*\*)?:\s*(\d+)'
-    simple_matches = re.findall(simple_pattern, ai_prediction_text)
-    if len(simple_matches) >= 4:
-        return _build_sets_from_matches(simple_matches)
-
-    return None
+    try:
+        data = json.loads(text)
+        if not isinstance(data, list):
+            return None
+        sets = []
+        for item in data[:4]:
+            if not isinstance(item, dict):
+                continue
+            regular = item.get('regular_numbers', [])
+            special = item.get('special_number')
+            set_type = item.get('type', '')
+            reason = item.get('reason', f"基於歷史資料分析的{set_type}")
+            if len(regular) != 6 or special is None:
+                continue
+            sets.append({
+                "type": set_type,
+                "regular_numbers": [int(n) for n in regular],
+                "special_number": int(special),
+                "reason": reason
+            })
+        return sets if sets else None
+    except (json.JSONDecodeError, ValueError, TypeError):
+        return None
 
 @app.get("/")
 async def root():
