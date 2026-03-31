@@ -30,8 +30,15 @@ def compute_frequency_analysis(lottery_data):
             special_frequency[special] = special_frequency.get(special, 0) + 1
 
     sorted_numbers = sorted(number_frequency.items(), key=lambda x: x[1], reverse=True)
-    hot_numbers = sorted_numbers[:10]
-    cold_numbers = sorted_numbers[-10:] if len(sorted_numbers) >= 10 else sorted_numbers
+    # 原始程式碼（已修改，避免熱門/冷門號碼重疊）：
+    # hot_numbers = sorted_numbers[:10]
+    # cold_numbers = sorted_numbers[-10:] if len(sorted_numbers) >= 10 else sorted_numbers
+    # 修正：當號碼種類 < 20 時，確保熱門與冷門不重疊
+    half = len(sorted_numbers) // 2
+    hot_count = min(10, half) if half > 0 else min(10, len(sorted_numbers))
+    cold_start = max(hot_count, len(sorted_numbers) - 10)
+    hot_numbers = sorted_numbers[:hot_count]
+    cold_numbers = sorted_numbers[cold_start:]
 
     return {
         "number_frequency": number_frequency,
