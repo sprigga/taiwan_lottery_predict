@@ -2,6 +2,7 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import './styles/lottery-common.css'
 import { TrendCharts, DataAnalysis, Money, Calendar } from '@element-plus/icons-vue'
 
 import App from './App.vue'

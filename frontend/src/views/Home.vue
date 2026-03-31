@@ -326,24 +326,10 @@ export default {
   justify-content: center;
 }
 
-.number-tag {
-  font-weight: bold;
-  font-size: 14px;
-  min-width: 32px;
-  text-align: center;
-}
-
-.number-tag.regular {
-  background: linear-gradient(135deg, #409EFF, #1890ff);
-  color: white;
-  border: none;
-}
-
-.number-tag.special {
-  background: linear-gradient(135deg, #F56C6C, #ff4757);
-  color: white;
-  border: none;
-}
+/* [原始] .number-tag { font-weight: bold; font-size: 14px; min-width: 32px; text-align: center; } */
+/* [原始] .number-tag.regular { background: linear-gradient(135deg, #409EFF, #1890ff); color: white; border: none; } */
+/* [原始] .number-tag.special { background: linear-gradient(135deg, #F56C6C, #ff4757); color: white; border: none; } */
+/* 以上 .number-tag 樣式已移至 lottery-common.css 共享 */
 
 .plus {
   font-weight: bold;

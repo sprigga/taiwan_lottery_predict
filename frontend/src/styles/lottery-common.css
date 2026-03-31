@@ -1,0 +1,67 @@
+/* lottery-common.css — 號碼球、分頁、載入/錯誤狀態的共享樣式 */
+
+/* === 號碼球基礎 === */
+.number-group {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.number-tag {
+  font-weight: bold;
+  font-size: 14px;
+  min-width: 35px;
+  text-align: center;
+  margin: 2px;
+}
+
+/* === 號碼球色彩變體 === */
+.number-tag.lotto-number,
+.number-tag.main-number {
+  background: linear-gradient(135deg, #409EFF, #1890ff);
+  color: white;
+  border: none;
+}
+
+.number-tag.super-number {
+  background: linear-gradient(135deg, #67C23A, #52c41a);
+  color: white;
+  border: none;
+}
+
+.number-tag.cash-number {
+  background: linear-gradient(135deg, #E6A23C, #fa8c16);
+  color: white;
+  border: none;
+}
+
+.number-tag.special-number {
+  background: linear-gradient(135deg, #F56C6C, #ff4757);
+  color: white;
+  border: none;
+}
+
+.number-tag.power-number {
+  background: linear-gradient(135deg, #FF7875, #ff4d4f);
+  color: white;
+  border: none;
+}
+
+/* === 分頁 === */
+.pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* === 狀態區域 === */
+.loading-section {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.error-section,
+.initial-section {
+  padding: 40px 20px;
+  text-align: center;
+}

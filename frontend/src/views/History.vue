@@ -318,10 +318,8 @@ export default {
   padding: 20px 0;
 }
 
-.loading-section {
-  text-align: center;
-  padding: 40px 20px;
-}
+/* [原始] .loading-section { text-align: center; padding: 40px 20px; } */
+/* .loading-section 已移至 lottery-common.css 共享 */
 
 .loading-text {
   margin-top: 20px;
@@ -340,61 +338,8 @@ export default {
   margin-bottom: 20px;
 }
 
-.number-group {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-
-.number-tag {
-  font-weight: bold;
-  font-size: 14px;
-  min-width: 35px;
-  text-align: center;
-  margin: 2px;
-}
-
-.lotto-number {
-  background: linear-gradient(135deg, #409EFF, #1890ff);
-  color: white;
-  border: none;
-}
-
-.super-number {
-  background: linear-gradient(135deg, #67C23A, #52c41a);
-  color: white;
-  border: none;
-}
-
-.cash-number {
-  background: linear-gradient(135deg, #E6A23C, #fa8c16);
-  color: white;
-  border: none;
-}
-
-.special-number {
-  background: linear-gradient(135deg, #F56C6C, #ff4757);
-  color: white;
-  border: none;
-}
-
-.power-number {
-  background: linear-gradient(135deg, #FF7875, #ff4d4f);
-  color: white;
-  border: none;
-}
-
-.pagination-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.error-section,
-.initial-section {
-  padding: 40px 20px;
-  text-align: center;
-}
+/* [原始] .number-group, .number-tag, .lotto-number, .super-number, .cash-number, .special-number, .power-number, .pagination-wrapper, .error-section, .initial-section */
+/* 以上樣式已移至 lottery-common.css 共享 */
 
 @media (max-width: 768px) {
   .query-form .el-col {

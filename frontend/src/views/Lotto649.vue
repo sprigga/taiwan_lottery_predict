@@ -349,10 +349,8 @@ export default {
   color: #666;
 }
 
-.loading-section {
-  text-align: center;
-  padding: 40px 20px;
-}
+/* [原始] .loading-section { text-align: center; padding: 40px 20px; } */
+/* .loading-section 已移至 lottery-common.css 共享 */
 
 .loading-text {
   margin-top: 20px;
@@ -432,11 +430,8 @@ export default {
   opacity: 0.9;
 }
 
-.error-section,
-.initial-section {
-  padding: 40px 20px;
-  text-align: center;
-}
+/* [原始] .error-section, .initial-section { padding: 40px 20px; text-align: center; } */
+/* .error-section, .initial-section 已移至 lottery-common.css 共享 */
 
 @media (max-width: 768px) {
   .card-header {

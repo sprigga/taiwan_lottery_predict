@@ -207,50 +207,15 @@ export default {
   align-items: center;
 }
 
-.loading-section {
-  padding: 40px 20px;
-}
+/* [原始] .loading-section { padding: 40px 20px; } */
+/* .loading-section 已移至 lottery-common.css 共享 */
 
 .data-section {
   padding: 20px 0;
 }
 
-.number-group {
-  display: flex;
-  gap: 5px;
-  flex-wrap: wrap;
-}
-
-.number-tag {
-  font-weight: bold;
-  font-size: 14px;
-  min-width: 35px;
-  text-align: center;
-}
-
-.main-number {
-  background: linear-gradient(135deg, #409EFF, #1890ff);
-  color: white;
-  border: none;
-}
-
-.special-number {
-  background: linear-gradient(135deg, #F56C6C, #ff4757);
-  color: white;
-  border: none;
-}
-
-.pagination-wrapper {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.error-section,
-.initial-section {
-  padding: 40px 20px;
-  text-align: center;
-}
+/* [原始] .number-group, .number-tag, .main-number, .special-number, .pagination-wrapper, .error-section, .initial-section */
+/* 以上樣式已移至 lottery-common.css 共享 */
 
 @media (max-width: 768px) {
   .card-header {
